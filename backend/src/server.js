@@ -1,17 +1,39 @@
-import express from "express"
-import dotenv from "dotenv"
-import { connection } from "./libs/db.js"
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { initDatabase } from "./libs/db.js";
+import authRoute from "./routes/authRoute.js";
 
-dotenv.config()
+// Load environment variables
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 4000;
 
-// middleware
-app.use(express.json())
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-connection().then(() => {
-    app.listen(PORT, () => {
-        console.log(`Server bắt đầu trên cổng ${PORT}`)
-    })
+// Routes
+app.use('/api/auth', authRoute);
+
+// Basic error handling
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi máy chủ nội bộ.' });
 });
+
+// Start server
+const startServer = async () => {
+    try {
+        await initDatabase();
+        app.listen(PORT, () => {
+            console.log(`Server đang chạy trên cổng ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Lỗi khởi động server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
