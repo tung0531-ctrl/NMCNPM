@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { initDatabase } from "./libs/db.js";
 import authRoute from "./routes/authRoute.js";
+import userRoute from "./routes/userRoute.js";
+import { protectecRoute } from "./middlewares/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
 // Load environment variables
@@ -17,6 +19,9 @@ app.use(express.json());
 app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoute);
+// Private route
+app.use(protectecRoute);
+app.use('/api/users', userRoute);
 
 // Basic error handling
 app.use((err, req, res, next) => {
