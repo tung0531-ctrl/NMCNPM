@@ -1,13 +1,13 @@
 import User from "../models/User.js";
 import Session from "../models/Session.js";
-import { Op } from 'sequelize';
+import { Op } from "sequelize";
 import { sequelize } from "../libs/db.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
-const ACCESS_TOKEN_TTL = '30m';
-const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+const ACCESS_TOKEN_TTL = "30m";
+const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // 14 ngày
 
 export const signUp = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -15,77 +15,74 @@ export const signUp = async (req, res) => {
     try {
         const { username, password, email, firstName, lastName, phone } = req.body;
 
-        // Validate required fields
         if (!username || !email || !password || !firstName || !lastName) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 message: "Vui lòng điền đầy đủ thông tin."
             });
         }
 
-        // Check for duplicate username or email in a single query
-        const existingUser = await User.findOne({
+        // kiểm tra trùng username hoặc email
+        const normalizedUsername = username.trim().toLowerCase();
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const existing = await User.findOne({
             where: {
-                [Op.or]: [
-                    { username },
-                    { email }
-                ]
+                [Op.or]: [{ username: normalizedUsername }, { email: normalizedEmail }]
             },
-            attributes: ['username', 'email'],
+            attributes: ["username", "email"],
             transaction
         });
 
-        if (existingUser) {
+        if (existing) {
             await transaction.rollback();
             return res.status(409).json({
                 success: false,
-                message: existingUser.username === username 
-                    ? "Username đã tồn tại."
-                    : "Email đã tồn tại."
+                message:
+                    existing.username === username
+                        ? "Username đã tồn tại."
+                        : "Email đã tồn tại."
             });
         }
 
-        // Hash password
+        // hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create new user with transaction
-        await User.create({
-            username,
-            email,
-            displayName: `${firstName} ${lastName}`,
-            hashedPassword,
-            phone
-        }, { transaction });
+        // tạo user
+        await User.create(
+            {
+                username: normalizedUsername,
+                email: normalizedEmail,
+                displayName: `${firstName} ${lastName}`,
+                hashedPassword,
+                phone
+            },
+            { transaction }
+        );
 
-        // Commit transaction
         await transaction.commit();
 
-        // Return success response
-        return res.sendStatus(204)
-
+        return res.sendStatus(204);
     } catch (error) {
-        // Rollback transaction on error
         await transaction.rollback();
+        console.error("Lỗi signUp:", error);
 
-        console.error('Lỗi đăng ký người dùng:', error);
-
-        // Handle specific Sequelize errors
-        if (error.name === 'SequelizeValidationError') {
+        if (error.name === "SequelizeValidationError") {
             return res.status(400).json({
                 success: false,
                 message: "Dữ liệu không hợp lệ",
-                errors: error.errors.map(e => ({
+                errors: error.errors.map((e) => ({
                     field: e.path,
                     message: e.message
                 }))
             });
         }
 
-        if (error.name === 'SequelizeUniqueConstraintError') {
+        if (error.name === "SequelizeUniqueConstraintError") {
             return res.status(409).json({
                 success: false,
                 message: "Dữ liệu đã tồn tại",
-                errors: error.errors.map(e => ({
+                errors: error.errors.map((e) => ({
                     field: e.path,
                     message: e.message
                 }))
@@ -101,74 +98,78 @@ export const signUp = async (req, res) => {
 
 export const signIn = async (req, res) => {
     try {
-        // lấy input từ req body
         const { username, password } = req.body;
 
-        if(!username || !password) {
+        if (!username || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Vui lòng điền đầy đủ thông tin."
             });
         }
-        // lấy hashed password từ db qua email hoặc username
+
+        // tìm user theo username (đăng nhập bằng username)
+        const normalizedUsername = username.trim().toLowerCase();
+
         const user = await User.findOne({
-            where: {
-                [Op.or]: [
-                    { username }
-                ]
-            }
+            where: { username: normalizedUsername }
         });
-        if(!user) {
-            return  res.status(401).json({
-                success: false,
-                message: "Tên đăng nhập hoặc mật khẩu không đúng."
-            });
-        }
-        // so sánh password với hashed password
-        const isMatch = await bcrypt.compare(password, user.hashedPassword);
-        if(!isMatch) {
+
+        if (!user) {
             return res.status(401).json({
                 success: false,
                 message: "Tên đăng nhập hoặc mật khẩu không đúng."
             });
         }
-        // xoá session cũ (nếu có)
+
+        // kiểm tra password
+        const isMatch = await bcrypt.compare(password, user.hashedPassword);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Tên đăng nhập hoặc mật khẩu không đúng."
+            });
+        }
+
+        // xoá session cũ nếu có
         await Session.destroy({
-            where: {
-                userId: user.id
-            }
+            where: { userId: user.id }
         });
-        // nếu khớp, tạo access token với JWT
+
+        // tạo access token
         const accessToken = jwt.sign(
             { userId: user.id },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: ACCESS_TOKEN_TTL }
         );
-        // tạo refresh token với JWT
-        const refreshToken = crypto.randomBytes(64).toString('hex');
 
-        // tạo session mới để lưu refresh token
+        // tạo refresh token ngẫu nhiên (bảo mật tốt hơn JWT)
+        const refreshToken = crypto.randomBytes(64).toString("hex");
+
         const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL);
+
+        // lưu session
         await Session.create({
             userId: user.id,
             refreshToken,
             expiresAt
         });
-        // trả refresh token qua http only cookie
-        res.cookie('refreshToken', refreshToken, {
+
+        // gửi refreshToken qua cookie
+        res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
+            sameSite: "none",
             maxAge: REFRESH_TOKEN_TTL
         });
-        // trả access token qua response body
+
+        // trả access token
         return res.status(200).json({
             success: true,
             accessToken
         });
-    }
-    catch (error) {
-        console.error("Lỗi khi gọi signIn", error);
+    } catch (error) {
+        console.error("Lỗi signIn:", error);
         return res.status(500).json({
             success: false,
             message: "Lỗi máy chủ nội bộ."
@@ -180,20 +181,21 @@ export const signOut = async (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
 
-        if(refreshToken) {
+        if (refreshToken) {
             await Session.destroy({
-                where: {
-                    refreshToken
-                }
+                where: { refreshToken }
             });
 
-            res.clearCookie('refreshToken');
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: true,
+                sameSite: "none"
+            });
         }
 
         return res.sendStatus(204);
-    }
-    catch (error) {
-        console.error("Lỗi khi gọi signOut", error);
+    } catch (error) {
+        console.error("Lỗi signOut:", error);
         return res.status(500).json({
             success: false,
             message: "Lỗi máy chủ nội bộ."

@@ -4,7 +4,7 @@ import User from './User.js';
 
 const Session = sequelize.define('Session', {
     userId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.CHAR(36),
         allowNull: false,
     },
     refreshToken: {
@@ -28,5 +28,8 @@ const Session = sequelize.define('Session', {
     ]
 });
 
-Session.belongsTo(User, { foreignKey: 'userId' });
+Session.belongsTo(User, { 
+    foreignKey: 'userId',
+    onDelete: 'CASCADE'
+});
 export default Session;
