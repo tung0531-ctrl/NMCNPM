@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-export const protectecRoute = async (req, res, next) => {
+export const protectedRoute = async (req, res, next) => {
     try {
         // Lấy token từ header Authorization
         const authHeader = req.headers["authorization"];

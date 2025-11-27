@@ -4,7 +4,7 @@ import cors from "cors";
 import { initDatabase } from "./libs/db.js";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
-import { protectecRoute } from "./middlewares/authMiddleware.js";
+import { protectedRoute } from "./middlewares/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
 // Load environment variables
@@ -20,7 +20,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoute);
 // Private route
-app.use(protectecRoute);
+app.use(protectedRoute);
 app.use('/api/users', userRoute);
 
 // Basic error handling
