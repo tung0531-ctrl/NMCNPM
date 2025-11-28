@@ -2,13 +2,13 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../libs/db.js";
 
 const User = sequelize.define("User", {
-    id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+    user_id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true
     },
     username: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(50),
         allowNull: false,
         unique: true,
         set(value) {
@@ -16,38 +16,37 @@ const User = sequelize.define("User", {
         }
     },
     email: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(100),
         allowNull: false,
         unique: true,
         set(value) {
             this.setDataValue("email", value.trim().toLowerCase());
         }
     },
-    displayName: {
-        type: DataTypes.STRING,
+    full_name: {
+        type: DataTypes.STRING(100),
         allowNull: false,
         set(value) {
-            this.setDataValue("displayName", value.trim());
+            this.setDataValue("full_name", value.trim());
         }
     },
-    hashedPassword: {
-        type: DataTypes.STRING,
+    password_hash: {
+        type: DataTypes.STRING(255),
         allowNull: false
     },
-    phone: {
-        type: DataTypes.STRING,
-        allowNull: true
+    role: {
+        type: DataTypes.ENUM('ADMIN', 'RESIDENT'),
+        allowNull: false,
+        defaultValue: 'RESIDENT'
+    },
+    status: {
+        type: DataTypes.ENUM('ACTIVE', 'LOCKED'),
+        defaultValue: 'ACTIVE'
     }
 }, {
+    tableName: "users",
     timestamps: true,
-    indexes: [
-        {
-            fields: ["username"]
-        },
-        {
-            fields: ["email"]
-        }
-    ]
+    underscored: true
 });
 
 export default User;

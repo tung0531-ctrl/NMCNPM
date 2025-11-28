@@ -1,35 +1,32 @@
 import { sequelize } from '../libs/db.js';
 import { DataTypes } from 'sequelize';
-import User from './User.js';
 
 const Session = sequelize.define('Session', {
-    userId: {
-        type: DataTypes.CHAR(36),
+    session_id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    user_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
-    refreshToken: {
+    refresh_token: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
     },
-    expiresAt: {
+    expires_at: {
         type: DataTypes.DATE,
         allowNull: false
-    }
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+    },
 }, {
-    timestamps: true,
-    indexes: [
-        {
-            fields: ['expiresAt']
-        },
-        {
-            fields: ['userId']
-        }
-    ]
+    tableName: 'sessions',
+    timestamps: false
 });
 
-Session.belongsTo(User, { 
-    foreignKey: 'userId',
-    onDelete: 'CASCADE'
-});
 export default Session;

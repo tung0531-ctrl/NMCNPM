@@ -25,8 +25,8 @@ export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
     define: {
         // Prevent sequelize from pluralizing table names
         freezeTableName: true,
-        // Add createdAt and updatedAt timestamps
-        timestamps: true
+        // Use snake_case column names like `created_at` / `updated_at` to match SQL schema
+        underscored: true
     }
 });
 
@@ -35,11 +35,6 @@ export const initDatabase = async () => {
     try {
         await sequelize.authenticate();
         console.log('Database connection established successfully.');
-        
-        // Sync all models
-        // Note: In production, you might want to remove or control this
-        await sequelize.sync({ alter: false });
-        console.log('Database models synchronized.');
         
         return true;
     } catch (error) {

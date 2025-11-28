@@ -13,7 +13,7 @@ export const signUp = async (req, res) => {
     const transaction = await sequelize.transaction();
 
     try {
-        const { username, password, email, firstName, lastName, phone } = req.body;
+        const { username, password, email, firstName, lastName } = req.body;
 
         if (!username || !email || !password || !firstName || !lastName) {
             return res.status(400).json({
@@ -53,9 +53,8 @@ export const signUp = async (req, res) => {
             {
                 username: normalizedUsername,
                 email: normalizedEmail,
-                displayName: `${firstName} ${lastName}`,
-                hashedPassword,
-                phone
+                full_name: `${firstName} ${lastName}`,
+                password_hash: hashedPassword
             },
             { transaction }
         );
@@ -122,7 +121,7 @@ export const signIn = async (req, res) => {
         }
 
         // kiểm tra password
-        const isMatch = await bcrypt.compare(password, user.hashedPassword);
+        const isMatch = await bcrypt.compare(password, user.password_hash);
 
         if (!isMatch) {
             return res.status(401).json({
@@ -133,30 +132,30 @@ export const signIn = async (req, res) => {
 
         // xoá session cũ nếu có
         await Session.destroy({
-            where: { userId: user.id }
+            where: { user_id: user.user_id }
         });
 
         // tạo access token
         const accessToken = jwt.sign(
-            { userId: user.id },
+            { userId: user.user_id },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: ACCESS_TOKEN_TTL }
         );
 
         // tạo refresh token ngẫu nhiên (bảo mật tốt hơn JWT)
-        const refreshToken = crypto.randomBytes(64).toString("hex");
+        const refresh_token = crypto.randomBytes(64).toString("hex");
 
-        const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL);
+        const expires_at = new Date(Date.now() + REFRESH_TOKEN_TTL);
 
         // lưu session
         await Session.create({
-            userId: user.id,
-            refreshToken,
-            expiresAt
+            user_id: user.user_id,
+            refresh_token,
+            expires_at
         });
 
         // gửi refreshToken qua cookie
-        res.cookie("refreshToken", refreshToken, {
+        res.cookie("refreshToken", refresh_token, {
             httpOnly: true,
             secure: true,
             sameSite: "none",
@@ -179,11 +178,11 @@ export const signIn = async (req, res) => {
 
 export const signOut = async (req, res) => {
     try {
-        const refreshToken = req.cookies?.refreshToken;
+        const refresh_token = req.cookies?.refreshToken;
 
-        if (refreshToken) {
+        if (refresh_token) {
             await Session.destroy({
-                where: { refreshToken }
+                where: { refresh_token }
             });
 
             res.clearCookie("refreshToken", {
