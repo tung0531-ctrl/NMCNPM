@@ -125,4 +125,4 @@ Cơ sở dữ liệu được chia thành 4 phân hệ chính (Modules):
 * **Tên bảng:** Số nhiều, chữ thường, snake_case (vd: `users`, `fee_types`).
 * **Khóa chính:** `[table_name_singular]_id` (vd: `user_id`, `bill_id`).
 * **Khóa ngoại:** Tên giống khóa chính của bảng tham chiếu.
-* **Ngôn ngữ:** Tiếng Anh hoàn toàn.
+* **Ngôn ngữ:** Tiếng Anh.
