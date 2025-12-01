@@ -28,7 +28,7 @@ export function SigninForm({
      const {register, handleSubmit, formState: {errors, isSubmitting}} = useForm<SignInFormValues>({
             resolver: zodResolver(signInSchema)
         });
-    
+    //gọi backend để signup
         const onSubmit = async (data: SignInFormValues) =>{
           const {username, password} = data;
          await signIn (username, password);
@@ -63,7 +63,7 @@ export function SigninForm({
                 <Input
                 type ="text"
                 id = "username"
-              placeholder ="moji"
+              placeholder ="bluemoon"
               {...register("username")}
                 />
                 {/* todo: error message */}
