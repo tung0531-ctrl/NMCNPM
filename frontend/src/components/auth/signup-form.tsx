@@ -110,7 +110,7 @@ export function SignupForm({
                 <Input
                 type ="text"
                 id = "username"
-              placeholder ="moji"
+              placeholder ="abc"
               {...register("username")}///////////////////////////////////hình như đoạn này phải là username chứ không phải firstname
                 />
                 {/* todo: error message */}

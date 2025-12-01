@@ -5,7 +5,7 @@ import type { AuthState } from '@/types/store';
 export const useAuthStore = create<AuthState>((set, get) => ({
     accessToken: null,
     user: null,
-    loading: false
+    loading: false,
 
     signUp: async (username, password, email, firstName, lastName) => {
         try {
