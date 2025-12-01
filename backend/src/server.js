@@ -11,10 +11,17 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
+// Configure CORS to allow requests from the frontend and allow credentials (cookies)
+const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
+app.use(
+    cors({
+        origin: frontendOrigin,
+        credentials: true
+    })
+);
 app.use(express.json());
 app.use(cookieParser());
 // Routes
