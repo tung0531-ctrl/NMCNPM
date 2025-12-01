@@ -13,6 +13,7 @@ export const signUp = async (req, res) => {
     const transaction = await sequelize.transaction();
 
     try {
+        console.debug('signUp request body:', req.body);
         const { username, password, email, firstName, lastName } = req.body;
 
         if (!username || !email || !password || !firstName || !lastName) {

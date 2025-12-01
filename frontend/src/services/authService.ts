@@ -21,7 +21,7 @@ export const authService = {
         username: string,
         password: string) => {
             const res = await api.post( 
-                "auth/signin",
+                "/auth/signin",
                 { username, password}, 
                 {withCredentials: true }
             );
