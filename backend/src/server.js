@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 // Configure CORS to allow requests from the frontend and allow credentials (cookies)
-const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
+const frontendOrigin = process.env.FRONTEND_ORIGIN|| 'http://localhost:5173';
 app.use(
     cors({
         origin: frontendOrigin,

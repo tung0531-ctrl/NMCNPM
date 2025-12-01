@@ -55,7 +55,7 @@ export const signUp = async (req, res) => {
                 username: normalizedUsername,
                 email: normalizedEmail,
                 full_name: `${firstName} ${lastName}`,
-                password_hash: hashedPassword
+                password_hash: hashedPassword,
             },
             { transaction }
         );
