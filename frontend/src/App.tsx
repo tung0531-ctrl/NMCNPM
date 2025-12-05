@@ -5,6 +5,7 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ChatAppPage from './pages/ChatAppPage';
 import {Toaster} from 'sonner';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   return <>
@@ -16,19 +17,23 @@ function App() {
       path = '/signin'
       element = {<SignInPage/>}
       />
-  {/* protect routes*/}
-  {/* todo: tạo protected route */}
-    <Route
+       <Route
       path = '/signup'
       element = {<SignUpPage/>}
       />
+  {/* protect routes*/}
+  {/* todo: tạo protected route */}
+    <Route element = {<ProtectedRoute />}>
+   
     <Route
       path = '/'
       element = {<ChatAppPage/>}
       />
-</Routes>
+    </Route>
+  </Routes>
 </BrowserRouter>
   </>
+  
 };
 
 export default App
