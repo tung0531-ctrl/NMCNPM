@@ -2,31 +2,36 @@ import { sequelize } from '../libs/db.js';
 import { DataTypes } from 'sequelize';
 
 const Session = sequelize.define('Session', {
-    session_id: {
+    sessionId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
+        field: 'session_id',
     },
-    user_id: {
+    userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        field: 'user_id',
     },
-    refresh_token: {
+    refreshToken: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+        unique: true,
+        field: 'refresh_token',
     },
-    expires_at: {
+    expiresAt: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: false,
+        field: 'expires_at',
     },
-    created_at: {
+    createdAt: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        defaultValue: DataTypes.NOW,
+        field: 'created_at',
     },
 }, {
     tableName: 'sessions',
-    timestamps: false
+    timestamps: false,
 });
 
 export default Session;

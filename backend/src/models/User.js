@@ -2,10 +2,11 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../libs/db.js";
 
 const User = sequelize.define("User", {
-    user_id: {
+    userId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
+        field: "user_id",
     },
     username: {
         type: DataTypes.STRING(50),
@@ -13,7 +14,8 @@ const User = sequelize.define("User", {
         unique: true,
         set(value) {
             this.setDataValue("username", value.trim().toLowerCase());
-        }
+        },
+        field: "username",
     },
     email: {
         type: DataTypes.STRING(100),
@@ -21,27 +23,32 @@ const User = sequelize.define("User", {
         unique: true,
         set(value) {
             this.setDataValue("email", value.trim().toLowerCase());
-        }
+        },
+        field: "email",
     },
-    full_name: {
+    fullName: {
         type: DataTypes.STRING(100),
         allowNull: false,
         set(value) {
-            this.setDataValue("full_name", value.trim());
-        }
+            this.setDataValue("fullName", value.trim());
+        },
+        field: "full_name",
     },
-    password_hash: {
+    passwordHash: {
         type: DataTypes.STRING(255),
-        allowNull: false
+        allowNull: false,
+        field: "password_hash",
     },
     role: {
-        type: DataTypes.ENUM('ADMIN', 'RESIDENT'),
+        type: DataTypes.ENUM("ADMIN", "RESIDENT"),
         allowNull: false,
-        defaultValue: 'RESIDENT'
+        defaultValue: "RESIDENT",
+        field: "role",
     },
     status: {
-        type: DataTypes.ENUM('ACTIVE', 'LOCKED'),
-        defaultValue: 'ACTIVE'
+        type: DataTypes.ENUM("ACTIVE", "LOCKED"),
+        defaultValue: "ACTIVE",
+        field: "status",
     }
 }, {
     tableName: "users",

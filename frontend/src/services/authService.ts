@@ -1,3 +1,5 @@
+//viết trong authService thì khai báo ở trong State, rồi đến làm phần ở trong store
+
 import api from '@/lib/axios';
 
 export const authService = {
@@ -35,5 +37,11 @@ export const authService = {
     fetchMe: async () => {
         const res = await api. get("/users/me", {withCredentials: true});
         return res.data;//đoạn này là res.data chứ không .user nữa vì dữ liệu BE của mình trả về không giống định dạng vid mẫu
-    }        
+    },
+    
+    refresh: async () => {
+        const res = await api.post ("/auth/refresh",{}, {withCredentials: true});
+        return res.data.accessToken;
+    },
 };
+

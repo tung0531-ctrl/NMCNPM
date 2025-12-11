@@ -21,7 +21,7 @@ export const protectedRoute = async (req, res, next) => {
             if (!user) {
                 return res.status(404).json({ message: "Người dùng không tồn tại." });
             }
-            const { password_hash, ...userWithoutPassword } = user.toJSON();
+            const { passwordHash, ...userWithoutPassword } = user.toJSON();
             req.user = userWithoutPassword;
             next();
         })
