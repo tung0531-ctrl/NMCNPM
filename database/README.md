@@ -78,22 +78,7 @@ Cơ sở dữ liệu được chia thành 4 phân hệ chính (Modules):
         * `PAID`: Đã đóng đủ.
 * [cite_start]**Mapping yêu cầu:** Đáp ứng US07, US08[cite: 9].
 
-#### 🔹 Bảng `bill_details` (Chi tiết hóa đơn)
-* **Chức năng:** Các dòng chi tiết trong tờ hóa đơn (VD: Dòng 1 - Tiền điện, Dòng 2 - Tiền nước).
-* **Logic tính toán:**
-    * `amount` = `quantity` (số lượng tiêu thụ) * `current_unit_price` (giá tại thời điểm đó).
-    * **Lưu ý thiết kế:** Bảng này lưu cứng cột `current_unit_price`.
-        * *Tại sao?* Nếu tháng sau giá điện tăng trong bảng `fee_types`, hóa đơn tháng cũ trong `bill_details` vẫn giữ nguyên giá cũ, đảm bảo lịch sử tài chính chính xác tuyệt đối.
-
-#### 🔹 Bảng `transactions` (Giao dịch thanh toán)
-* **Chức năng:** Lưu lịch sử mỗi lần khách trả tiền.
-* **Logic:**
-    * Một hóa đơn (`bills`) có thể được trả làm nhiều lần (`transactions`).
-    * Khi Admin nhận tiền (Tiền mặt hoặc Chuyển khoản), một dòng mới được tạo ra ở đây.
-    * Tổng `amount` của các transaction liên quan sẽ được cộng lại để cập nhật vào cột `paid_amount` trong bảng `bills`.
-* [cite_start]**Mapping yêu cầu:** Đáp ứng US05, US06[cite: 8, 9].
-
----
+--
 
 ## 3. Luồng nghiệp vụ mẫu (Workflow Scenarios)
 
