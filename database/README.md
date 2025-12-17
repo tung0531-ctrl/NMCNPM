@@ -80,32 +80,7 @@ Cơ sở dữ liệu được chia thành 4 phân hệ chính (Modules):
 
 --
 
-## 3. Luồng nghiệp vụ mẫu (Workflow Scenarios)
-
-### Kịch bản A: Chốt phí cuối tháng
-1.  **Admin** tạo một bản ghi `bills` mới cho hộ **A101** (Kỳ tháng 11).
-2.  **Admin** nhập chỉ số điện/nước/gửi xe vào bảng `bill_details`.
-3.  Hệ thống tính toán: `Total = (Số điện * Giá điện) + (Số nước * Giá nước) + ...`
-4.  Cập nhật `total_amount` vào bảng `bills`.
-5.  Trạng thái hóa đơn là `UNPAID`.
-
-### Kịch bản B: Cư dân đóng tiền
-1.  Cư dân **A101** đến đóng tiền mặt.
-2.  **Admin** tìm hóa đơn tháng 11 của A101.
-3.  **Admin** tạo một bản ghi vào bảng `transactions`:
-    * `amount`: Số tiền khách đưa.
-    * `payment_method`: 'CASH'.
-4.  Hệ thống cập nhật bảng `bills`:
-    * Tăng `paid_amount`.
-    * Nếu `paid_amount` >= `total_amount` -> Cập nhật `payment_status` = 'PAID'.
-
-### Kịch bản C: Tra cứu & Bảo mật
-1.  **Cư dân** đăng nhập -> Hệ thống query bảng `households` theo `user_id` -> Lấy được danh sách `bills` của chính họ.
-2.  **Admin** sửa giá tiền của một hóa đơn đã cũ -> Hệ thống tự động insert một dòng vào `audit_logs` ghi lại hành động này để đối soát sau này.
-
----
-
-## 4. Quy ước đặt tên (Naming Convention)
+## 3. Quy ước đặt tên (Naming Convention)
 
 * **Tên bảng:** Số nhiều, chữ thường, snake_case (vd: `users`, `fee_types`).
 * **Khóa chính:** `[table_name_singular]_id` (vd: `user_id`, `bill_id`).
