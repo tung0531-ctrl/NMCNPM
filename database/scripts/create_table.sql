@@ -1,6 +1,6 @@
 -- Tạo database
-CREATE DATABASE IF NOT EXISTS ApartmentManagement;
-USE ApartmentManagement;
+CREATE DATABASE IF NOT EXISTS BlueMoon;
+USE BlueMoon;
 
 -- =============================================
 -- 1. QUẢN LÝ HỆ THỐNG & PHÂN QUYỀN (Epic E05)
@@ -129,9 +129,31 @@ CREATE TABLE transactions (
     FOREIGN KEY (collector_id) REFERENCES users(user_id)
 );
 
+
+
+-- =============================================
+-- 17/12/2025: Thay đổi cách thức ghi nhận thu phí
+DROP TABLE IF EXISTS bill_details;
+DROP TABLE IF EXISTS transactions;
+
+-- Thêm cột Loại phí tham chiếu sang bảng fee_types
+ALTER TABLE bills
+ADD COLUMN fee_type_id INT NOT NULL,
+ADD CONSTRAINT fk_bill_fee_type
+FOREIGN KEY (fee_type_id) REFERENCES fee_types(fee_type_id);
+
+-- Định danh người thực hiện thu tiền tham chiếu bảng users
+ALTER TABLE bills
+ADD COLUMN collector_id INT NULL,
+ADD CONSTRAINT fk_bill_collector
+FOREIGN KEY (collector_id) REFERENCES users(user_id);
+
+
 -- =============================================
 -- INDEXES
 -- =============================================
 CREATE INDEX idx_household_search ON households(household_code, owner_name, address);
 CREATE INDEX idx_resident_search ON residents(full_name, identity_card_number);
-CREATE INDEX idx_bill_period ON bills(billing_period, payment_status);
+CREATE INDEX idx_bills_household_id ON bills(household_id);
+CREATE INDEX idx_bills_fee_status ON bills(fee_type_id, payment_status);
+CREATE INDEX idx_bills_period_status ON bills(billing_period, payment_status);
