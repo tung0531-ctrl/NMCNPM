@@ -4,6 +4,7 @@ import cors from "cors";
 import { initDatabase } from "./libs/db.js";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
+import billRoute from "./routes/billRoute.js";
 import { protectedRoute } from "./middlewares/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
@@ -18,14 +19,22 @@ const PORT = process.env.PORT || 5001;
 const frontendOrigin = process.env.FRONTEND_ORIGIN|| 'http://localhost:5173';
 app.use(
     cors({
-        origin: frontendOrigin,
+        origin: [frontendOrigin, 'http://localhost:5173', 'http://localhost:5174'],
         credentials: true
     })
 );
 app.use(express.json());
 app.use(cookieParser());
+
+// Logging middleware
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+});
+
 // Routes
 app.use('/api/auth', authRoute);
+app.use('/api/bills', billRoute); // Add bill route
 // Private route
 app.use(protectedRoute);
 app.use('/api/users', userRoute);

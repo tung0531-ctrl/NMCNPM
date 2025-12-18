@@ -2,7 +2,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.MODE === 'development' ? "http://localhost:5001/api" : "/api",
+    baseURL: "http://localhost:5001",
     withCredentials: true,
 
 });
@@ -26,7 +26,8 @@ api. interceptors.response.use((res) => res, async (error) =>{
     //những api không cần check
     if(originalRequest.url.includes("/auth/sigin") ||
       originalRequest.url.includes("/auth/sigup") ||  
-      originalRequest.url.includes("/auth/refresh")   
+      originalRequest.url.includes("/auth/refresh") ||
+      originalRequest.url.includes("/bills")
     ) {
         return Promise.reject(error);
     }

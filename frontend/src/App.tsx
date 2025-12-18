@@ -4,6 +4,7 @@ import {BrowserRouter, Route, Routes} from 'react-router'
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ChatAppPage from './pages/ChatAppPage';
+import BillManagementPage from './pages/BillManagementPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -20,6 +21,11 @@ function App() {
        <Route
       path = '/signup'
       element = {<SignUpPage/>}
+      />
+    {/* Temporary public route for testing */}
+    <Route
+      path = '/bills'
+      element = {<BillManagementPage/>}
       />
   {/* protect routes*/}
   {/* todo: tạo protected route */}

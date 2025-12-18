@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bills API</title>
+</head>
+<body>
+    <h1>Test Bills API</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/bills?limit=5', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

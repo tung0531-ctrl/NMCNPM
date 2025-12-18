@@ -1,0 +1,63 @@
+import axios from '../lib/axios';
+
+export interface Bill {
+    billId: number;
+    householdName: string;
+    title: string;
+    totalAmount: string | number;
+    paymentPeriod: string;
+    status: 'Đã thanh toán' | 'Chưa thanh toán' | 'Quá hạn' | 'Thanh toán một phần';
+    collectorName: string | null;
+    createdAt: string;
+}
+
+export interface BillFilters {
+    householdName?: string;
+    paymentPeriod?: string;
+    status?: string;
+    collectorName?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface BillsResponse {
+    bills: Bill[];
+    pagination: {
+        currentPage: number;
+        totalPages: number;
+        totalItems: number;
+        itemsPerPage: number;
+    };
+}
+
+export const getBills = async (filters?: BillFilters): Promise<BillsResponse> => {
+    console.log('getBills called with filters:', filters);
+    console.log('axios baseURL:', axios.defaults.baseURL);
+    
+    try {
+        // Build query string
+        const queryParams = new URLSearchParams();
+        if (filters) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    queryParams.append(key, String(value));
+                }
+            });
+        }
+        const queryString = queryParams.toString();
+        const url = `/api/bills${queryString ? '?' + queryString : ''}`;
+        
+        console.log('Calling URL:', url);
+        console.log('Full URL:', 'http://localhost:5001' + url);
+        
+        const response = await axios.get(url);
+        console.log('getBills response status:', response.status);
+        console.log('getBills response data:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('getBills error:', error);
+        console.error('Error response:', error.response);
+        console.error('Error message:', error.message);
+        throw error;
+    }
+};

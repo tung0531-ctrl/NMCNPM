@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 
+const sslConfig = process.env.DB_SSL === 'true' ? {
+    require: true,
+    rejectUnauthorized: false
+} : false;
+
 export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
     dialect: 'mysql',
     logging: false,
@@ -14,13 +19,10 @@ export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
         idle: 10000
     },
     dialectOptions: {
-    connectTimeout: 60000,
-    dateStrings: true,
-    typeCast: true,
-    ssl: {
-        require: true,
-        rejectUnauthorized: false
-    }
+        connectTimeout: 60000,
+        dateStrings: true,
+        typeCast: true,
+        ssl: sslConfig
     },
     define: {
         // Prevent sequelize from pluralizing table names
