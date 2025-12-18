@@ -216,40 +216,135 @@ const BillManagementPage = () => {
 
                             {/* Pagination */}
                             {pagination.totalPages > 1 && (
-                                <div className="flex justify-between items-center">
+                                <div className="flex justify-between items-center flex-wrap gap-4">
                                     <div className="text-sm text-muted-foreground">
                                         Hiển thị {bills.length} trong tổng số {pagination.totalItems} hóa đơn
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 items-center flex-wrap">
+                                        {/* First Page */}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(1)}
+                                            disabled={pagination.currentPage === 1 || loading}
+                                            title="Trang đầu"
+                                        >
+                                            ««
+                                        </Button>
+                                        
+                                        {/* Previous Page */}
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handlePageChange(pagination.currentPage - 1)}
                                             disabled={pagination.currentPage === 1 || loading}
                                         >
-                                            Trước
+                                            ‹ Trước
                                         </Button>
+                                        
+                                        {/* Page Numbers with Ellipsis */}
                                         <div className="flex items-center gap-1">
-                                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                                                <Button
-                                                    key={page}
-                                                    variant={page === pagination.currentPage ? 'default' : 'outline'}
-                                                    size="sm"
-                                                    onClick={() => handlePageChange(page)}
-                                                    disabled={loading}
-                                                >
-                                                    {page}
-                                                </Button>
-                                            ))}
+                                            {(() => {
+                                                const current = pagination.currentPage;
+                                                const total = pagination.totalPages;
+                                                const pages = [];
+                                                
+                                                if (total <= 7) {
+                                                    // Show all pages if total <= 7
+                                                    for (let i = 1; i <= total; i++) {
+                                                        pages.push(i);
+                                                    }
+                                                } else {
+                                                    // Always show first page
+                                                    pages.push(1);
+                                                    
+                                                    if (current > 3) {
+                                                        pages.push('...');
+                                                    }
+                                                    
+                                                    // Show pages around current
+                                                    const start = Math.max(2, current - 1);
+                                                    const end = Math.min(total - 1, current + 1);
+                                                    
+                                                    for (let i = start; i <= end; i++) {
+                                                        if (!pages.includes(i)) {
+                                                            pages.push(i);
+                                                        }
+                                                    }
+                                                    
+                                                    if (current < total - 2) {
+                                                        pages.push('...');
+                                                    }
+                                                    
+                                                    // Always show last page
+                                                    if (!pages.includes(total)) {
+                                                        pages.push(total);
+                                                    }
+                                                }
+                                                
+                                                return pages.map((page, idx) => 
+                                                    typeof page === 'number' ? (
+                                                        <Button
+                                                            key={page}
+                                                            variant={page === current ? 'default' : 'outline'}
+                                                            size="sm"
+                                                            onClick={() => handlePageChange(page)}
+                                                            disabled={loading}
+                                                            className="min-w-[40px]"
+                                                        >
+                                                            {page}
+                                                        </Button>
+                                                    ) : (
+                                                        <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                                                            {page}
+                                                        </span>
+                                                    )
+                                                );
+                                            })()}
                                         </div>
+                                        
+                                        {/* Next Page */}
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handlePageChange(pagination.currentPage + 1)}
                                             disabled={pagination.currentPage === pagination.totalPages || loading}
                                         >
-                                            Sau
+                                            Sau ›
                                         </Button>
+                                        
+                                        {/* Last Page */}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(pagination.totalPages)}
+                                            disabled={pagination.currentPage === pagination.totalPages || loading}
+                                            title="Trang cuối"
+                                        >
+                                            »»
+                                        </Button>
+                                        
+                                        {/* Go to Page Input */}
+                                        <div className="flex items-center gap-2 ml-2">
+                                            <span className="text-sm text-muted-foreground">Đến trang:</span>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={pagination.totalPages}
+                                                placeholder={pagination.currentPage.toString()}
+                                                className="w-16 px-2 py-1 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        const value = parseInt((e.target as HTMLInputElement).value);
+                                                        if (value >= 1 && value <= pagination.totalPages) {
+                                                            handlePageChange(value);
+                                                            (e.target as HTMLInputElement).value = '';
+                                                        }
+                                                    }
+                                                }}
+                                                disabled={loading}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             )}
