@@ -15,7 +15,7 @@ const isAdmin = user?.role === 'ADMIN';
 const handleOnClick = async () => {
   try {
     await api.get("/users/test", {withCredentials: true});
-    toast.success("ok");
+    toast.success("Test thành công. Hãy kiểm tra console để biết chi tiết");
   } catch (error) {
     toast.error("thất bại");
     console.error(error);
