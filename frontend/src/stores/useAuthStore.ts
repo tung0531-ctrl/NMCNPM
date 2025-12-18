@@ -41,10 +41,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             await get().fetchMe();
             toast.success('Đăng nhập thành công');
 
-
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast.error('Đăng nhập không thành công');
+            if (error.response?.status === 401) {
+                toast.error('Tên đăng nhập hoặc mật khẩu không đúng');
+            } else {
+                toast.error('Đăng nhập không thành công');
+            }
+            throw error; // Throw để không tiếp tục navigate
         } finally {
             set ({loading: false});
         }

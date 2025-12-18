@@ -2,7 +2,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: "http://localhost:5001",
+    baseURL: "http://localhost:5001/api",
     withCredentials: true,
 
 });
@@ -24,10 +24,9 @@ api. interceptors.response.use((res) => res, async (error) =>{
     const originalRequest = error.config;
 
     //những api không cần check
-    if(originalRequest.url.includes("/auth/sigin") ||
-      originalRequest.url.includes("/auth/sigup") ||  
-      originalRequest.url.includes("/auth/refresh") ||
-      originalRequest.url.includes("/bills")
+    if(originalRequest.url.includes("/auth/signin") ||
+      originalRequest.url.includes("/auth/signup") ||  
+      originalRequest.url.includes("/auth/refresh")
     ) {
         return Promise.reject(error);
     }

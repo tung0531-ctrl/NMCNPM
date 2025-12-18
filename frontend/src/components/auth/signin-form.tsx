@@ -31,8 +31,12 @@ export function SigninForm({
     //gọi backend để signup
         const onSubmit = async (data: SignInFormValues) =>{
           const {username, password} = data;
-         await signIn (username, password);
-         navigate ('/');
+          try {
+            await signIn (username, password);
+            navigate ('/');
+          } catch (error) {
+            // Error already handled in store with toast
+          }
         };
     return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

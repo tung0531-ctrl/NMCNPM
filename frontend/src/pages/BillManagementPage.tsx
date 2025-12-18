@@ -4,8 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { getBills, type Bill, type BillFilters } from '@/services/billService';
+import { useNavigate } from 'react-router';
 
 const BillManagementPage = () => {
+    const navigate = useNavigate();
     const [bills, setBills] = useState<Bill[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,12 +41,13 @@ const BillManagementPage = () => {
             setBills(response.bills);
             setPagination(response.pagination);
             console.log('Bills set successfully:', response.bills.length);
-        } catch (err: any) {
-            console.error('Error fetching bills:', err);
+        } catch (err) {
+            const error = err as { message: string; response?: { status: number } };
+            console.error('Error fetching bills:', error);
             console.error('Error details:', {
-                message: err.message,
-                response: err.response,
-                status: err.response?.status
+                message: error.message,
+                response: error.response,
+                status: error.response?.status
             });
             setError('Không thể tải danh sách hóa đơn. Vui lòng thử lại.');
         } finally {
@@ -83,11 +86,19 @@ const BillManagementPage = () => {
                     <CardContent className="p-6 md:p-8">
                         <div className="flex flex-col gap-6">
                             {/* Header */}
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-3xl font-bold">Quản lý các khoản thu</h1>
-                                <p className="text-muted-foreground">
-                                    Theo dõi và quản lý các khoản thu phí của hộ gia đình
-                                </p>
+                            <div className="flex justify-between items-start">
+                                <div className="flex flex-col gap-2">
+                                    <h1 className="text-3xl font-bold">Quản lý các khoản thu</h1>
+                                    <p className="text-muted-foreground">
+                                        Theo dõi và quản lý các khoản thu phí của hộ gia đình
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => navigate('/')}
+                                >
+                                    ← Về trang chủ
+                                </Button>
                             </div>
 
                             {/* Filters */}
@@ -116,6 +127,7 @@ const BillManagementPage = () => {
                                     <Label htmlFor="status">Trạng thái</Label>
                                     <select
                                         id="status"
+                                        title="Trạng thái"
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         value={filters.status || ''}
                                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}

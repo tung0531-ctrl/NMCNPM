@@ -45,7 +45,7 @@ export const getBills = async (filters?: BillFilters): Promise<BillsResponse> =>
             });
         }
         const queryString = queryParams.toString();
-        const url = `/api/bills${queryString ? '?' + queryString : ''}`;
+        const url = `/bills${queryString ? '?' + queryString : ''}`;
         
         console.log('Calling URL:', url);
         console.log('Full URL:', 'http://localhost:5001' + url);

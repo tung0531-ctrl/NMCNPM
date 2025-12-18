@@ -1,7 +1,13 @@
 import express from 'express';
 import { getAllBills } from '../controllers/billController.js';
+import { protectedRoute } from '../middlewares/authMiddleware.js';
+import { adminOnly } from '../middlewares/adminMiddleware.js';
 
 const router = express.Router();
+
+// Apply authentication and admin check to all bill routes
+router.use(protectedRoute);
+router.use(adminOnly);
 
 // Test route
 router.get('/test', (req, res) => {

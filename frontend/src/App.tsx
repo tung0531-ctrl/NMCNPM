@@ -7,6 +7,7 @@ import ChatAppPage from './pages/ChatAppPage';
 import BillManagementPage from './pages/BillManagementPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 
 function App() {
   return <>
@@ -22,18 +23,20 @@ function App() {
       path = '/signup'
       element = {<SignUpPage/>}
       />
-    {/* Temporary public route for testing */}
-    <Route
-      path = '/bills'
-      element = {<BillManagementPage/>}
-      />
   {/* protect routes*/}
   {/* todo: tạo protected route */}
     <Route element = {<ProtectedRoute />}>
-   
     <Route
       path = '/'
       element = {<ChatAppPage/>}
+      />
+    <Route
+      path = '/bills'
+      element = {
+        <AdminRoute>
+          <BillManagementPage/>
+        </AdminRoute>
+      }
       />
     </Route>
   </Routes>
