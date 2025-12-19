@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// đang làm giống hệt theo ứng dụng ChatApp nên có một số đoạn không cần thiết phải xóa đi, thêm sửa
+
+import {BrowserRouter, Route, Routes} from 'react-router'
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
+import ChatAppPage from './pages/ChatAppPage';
+import BillManagementPage from './pages/BillManagementPage';
+import FeeTypeManagementPage from './pages/FeeTypeManagementPage';
+import {Toaster} from 'sonner';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+  return <>
+  <Toaster/>
+<BrowserRouter>
+<Routes>
+  {/* public routes*/}
+    <Route
+      path = '/signin'
+      element = {<SignInPage/>}
+      />
+       <Route
+      path = '/signup'
+      element = {<SignUpPage/>}
+      />
+  {/* protect routes*/}
+  {/* todo: tạo protected route */}
+    <Route element = {<ProtectedRoute />}>
+    <Route
+      path = '/'
+      element = {<ChatAppPage/>}
+      />
+    <Route
+      path = '/bills'
+      element = {
+        <AdminRoute>
+          <BillManagementPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/fee-types'
+      element = {
+        <AdminRoute>
+          <FeeTypeManagementPage/>
+        </AdminRoute>
+      }
+      />
+    </Route>
+  </Routes>
+</BrowserRouter>
+  </>
+  
+};
 
 export default App
