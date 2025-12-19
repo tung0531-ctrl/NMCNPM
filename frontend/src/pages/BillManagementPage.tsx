@@ -3,14 +3,46 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { getBills, type Bill, type BillFilters } from '@/services/billService';
+import { 
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { getBills, updateBill, deleteBill, type Bill, type BillFilters, type UpdateBillData } from '@/services/billService';
 import { useNavigate } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
 
 const BillManagementPage = () => {
     const navigate = useNavigate();
     const [bills, setBills] = useState<Bill[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    // Dialog states
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     // Filters state
     const [filters, setFilters] = useState<BillFilters>({
@@ -29,6 +61,9 @@ const BillManagementPage = () => {
         totalItems: 0,
         itemsPerPage: 10
     });
+
+    // Form for editing
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateBillData>();
 
     const fetchBills = useCallback(async () => {
         console.log('fetchBills called with filters:', filters);
@@ -67,6 +102,61 @@ const BillManagementPage = () => {
 
     const handlePageChange = (newPage: number) => {
         setFilters(prev => ({ ...prev, page: newPage }));
+    };
+
+    const handleEdit = (bill: Bill) => {
+        setSelectedBill(bill);
+        reset({
+            title: bill.title,
+            totalAmount: Number(bill.totalAmount),
+            paidAmount: Number(bill.paidAmount),
+            paymentPeriod: bill.paymentPeriod,
+            collectorName: bill.collectorName || '',
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleDelete = (bill: Bill) => {
+        setSelectedBill(bill);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const onSubmitEdit = async (data: UpdateBillData) => {
+        if (!selectedBill) return;
+        
+        try {
+            setIsSubmitting(true);
+            const updatedBill = await updateBill(selectedBill.billId, data);
+            setIsEditDialogOpen(false);
+            
+            // Update the bill in local state instead of refetching
+            setBills(prevBills => 
+                prevBills.map(bill => 
+                    bill.billId === selectedBill.billId ? updatedBill : bill
+                )
+            );
+        } catch (err) {
+            console.error('Error updating bill:', err);
+            setError('Không thể cập nhật hóa đơn. Vui lòng thử lại.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const confirmDelete = async () => {
+        if (!selectedBill) return;
+        
+        try {
+            setIsSubmitting(true);
+            await deleteBill(selectedBill.billId);
+            setIsDeleteDialogOpen(false);
+            fetchBills();
+        } catch (err) {
+            console.error('Error deleting bill:', err);
+            setError('Không thể xóa hóa đơn. Vui lòng thử lại.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -183,20 +273,22 @@ const BillManagementPage = () => {
                                                 <th className="px-4 py-3 text-left text-sm font-semibold">Kỳ thanh toán</th>
                                                 <th className="px-4 py-3 text-left text-sm font-semibold">Tiêu đề</th>
                                                 <th className="px-4 py-3 text-left text-sm font-semibold">Tổng tiền</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Đã trả</th>
                                                 <th className="px-4 py-3 text-left text-sm font-semibold">Trạng thái</th>
                                                 <th className="px-4 py-3 text-left text-sm font-semibold">Người thu</th>
+                                                <th className="px-4 py-3 text-right text-sm font-semibold">Thao tác</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-border">
                                             {loading ? (
                                                 <tr>
-                                                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                                                    <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                                                         Đang tải...
                                                     </td>
                                                 </tr>
                                             ) : bills.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                                                    <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                                                         Không tìm thấy hóa đơn nào
                                                     </td>
                                                 </tr>
@@ -210,6 +302,9 @@ const BillManagementPage = () => {
                                                         <td className="px-4 py-4 text-sm font-medium">
                                                             {Number(bill.totalAmount).toLocaleString('vi-VN')} đ
                                                         </td>
+                                                        <td className="px-4 py-4 text-sm font-medium text-blue-600">
+                                                            {Number(bill.paidAmount).toLocaleString('vi-VN')} đ
+                                                        </td>
                                                         <td className="px-4 py-4">
                                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(bill.status)}`}>
                                                                 {bill.status}
@@ -217,6 +312,31 @@ const BillManagementPage = () => {
                                                         </td>
                                                         <td className="px-4 py-4 text-sm">
                                                             {bill.collectorName || '-'}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                                        <MoreVertical className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem 
+                                                                        onClick={() => handleEdit(bill)}
+                                                                        className="cursor-pointer"
+                                                                    >
+                                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                                        Chỉnh sửa
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem 
+                                                                        onClick={() => handleDelete(bill)}
+                                                                        className="cursor-pointer text-red-600 focus:text-red-600"
+                                                                    >
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        Xóa
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
                                                         </td>
                                                     </tr>
                                                 ))
@@ -390,6 +510,126 @@ const BillManagementPage = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                        <DialogTitle>Chỉnh sửa khoản thu</DialogTitle>
+                        <DialogDescription>
+                            Cập nhật thông tin khoản thu cho hộ gia đình
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit(onSubmitEdit)}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-title">Tiêu đề</Label>
+                                <Input
+                                    id="edit-title"
+                                    {...register('title', { required: 'Tiêu đề là bắt buộc' })}
+                                    placeholder="Nhập tiêu đề..."
+                                />
+                                {errors.title && (
+                                    <p className="text-sm text-red-500">{errors.title.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-totalAmount">Tổng tiền (VNĐ)</Label>
+                                <Input
+                                    id="edit-totalAmount"
+                                    type="number"
+                                    {...register('totalAmount', { 
+                                        required: 'Tổng tiền là bắt buộc',
+                                        min: { value: 0, message: 'Tổng tiền phải lớn hơn hoặc bằng 0' }
+                                    })}
+                                    placeholder="Nhập tổng tiền..."
+                                />
+                                {errors.totalAmount && (
+                                    <p className="text-sm text-red-500">{errors.totalAmount.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-paidAmount">Số tiền đã trả (VNĐ)</Label>
+                                <Input
+                                    id="edit-paidAmount"
+                                    type="number"
+                                    {...register('paidAmount', { 
+                                        required: 'Số tiền đã trả là bắt buộc',
+                                        min: { value: 0, message: 'Số tiền đã trả phải lớn hơn hoặc bằng 0' },
+                                        validate: (value, formValues) => {
+                                            const totalAmount = formValues.totalAmount || 0;
+                                            return Number(value) <= Number(totalAmount) || 'Số tiền đã trả không được lớn hơn tổng tiền';
+                                        }
+                                    })}
+                                    placeholder="Nhập số tiền đã trả..."
+                                />
+                                {errors.paidAmount && (
+                                    <p className="text-sm text-red-500">{errors.paidAmount.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-paymentPeriod">Kỳ thanh toán</Label>
+                                <Input
+                                    id="edit-paymentPeriod"
+                                    {...register('paymentPeriod', { required: 'Kỳ thanh toán là bắt buộc' })}
+                                    placeholder="VD: 2025-12"
+                                />
+                                {errors.paymentPeriod && (
+                                    <p className="text-sm text-red-500">{errors.paymentPeriod.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-collectorName">Người thu</Label>
+                                <Input
+                                    id="edit-collectorName"
+                                    {...register('collectorName')}
+                                    placeholder="Nhập tên người thu..."
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setIsEditDialogOpen(false)}
+                                disabled={isSubmitting}
+                            >
+                                Hủy
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bạn có chắc chắn muốn xóa khoản thu <strong>"{selectedBill?.title}"</strong> của hộ{' '}
+                            <strong>{selectedBill?.householdName}</strong>? Hành động này không thể hoàn tác.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isSubmitting}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            disabled={isSubmitting}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isSubmitting ? 'Đang xóa...' : 'Xóa'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

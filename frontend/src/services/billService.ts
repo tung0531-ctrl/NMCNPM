@@ -5,6 +5,7 @@ export interface Bill {
     householdName: string;
     title: string;
     totalAmount: string | number;
+    paidAmount: string | number;
     paymentPeriod: string;
     status: 'Đã thanh toán' | 'Chưa thanh toán' | 'Quá hạn' | 'Thanh toán một phần';
     collectorName: string | null;
@@ -58,6 +59,33 @@ export const getBills = async (filters?: BillFilters): Promise<BillsResponse> =>
         console.error('getBills error:', error);
         console.error('Error response:', error.response);
         console.error('Error message:', error.message);
+        throw error;
+    }
+};
+
+export interface UpdateBillData {
+    title?: string;
+    totalAmount?: number;
+    paidAmount?: number;
+    paymentPeriod?: string;
+    collectorName?: string;
+}
+
+export const updateBill = async (billId: number, data: UpdateBillData): Promise<Bill> => {
+    try {
+        const response = await axios.put(`/bills/${billId}`, data);
+        return response.data;
+    } catch (error: any) {
+        console.error('updateBill error:', error);
+        throw error;
+    }
+};
+
+export const deleteBill = async (billId: number): Promise<void> => {
+    try {
+        await axios.delete(`/bills/${billId}`);
+    } catch (error: any) {
+        console.error('deleteBill error:', error);
         throw error;
     }
 };

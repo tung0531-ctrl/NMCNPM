@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllBills } from '../controllers/billController.js';
+import { getAllBills, updateBill, deleteBill } from '../controllers/billController.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { adminOnly } from '../middlewares/adminMiddleware.js';
 
@@ -16,5 +16,11 @@ router.get('/test', (req, res) => {
 
 // Route to get all bills
 router.get('/', getAllBills);
+
+// Route to update a bill
+router.put('/:id', updateBill);
+
+// Route to delete a bill
+router.delete('/:id', deleteBill);
 
 export default router;

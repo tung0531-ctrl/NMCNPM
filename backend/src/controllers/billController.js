@@ -30,11 +30,14 @@ export const getAllBills = async (req, res) => {
         if (paymentPeriod) {
             const [year, month] = paymentPeriod.split('-');
             if (year && month) {
-                const startDate = new Date(year, month - 1, 1);
-                const endDate = new Date(year, month, 0);
+                // Start date: first day of the month at 00:00:00
+                const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
+                // End date: last day of the month at 23:59:59
+                const endDate = new Date(year, month, 0, 23, 59, 59, 999);
                 billWhere.billingPeriod = {
                     [Op.between]: [startDate, endDate]
                 };
+                console.log('Payment period filter:', { startDate, endDate });
             }
         }
         
@@ -123,6 +126,7 @@ export const getAllBills = async (req, res) => {
                 householdName: billData.household?.ownerName || '',
                 title: billData.title,
                 totalAmount: billData.totalAmount,
+                paidAmount: billData.paidAmount,
                 paymentPeriod: new Date(billData.billingPeriod).toISOString().slice(0, 7),
                 status: displayStatus,
                 collectorName: billData.collector?.fullName || null,
@@ -146,6 +150,153 @@ export const getAllBills = async (req, res) => {
     } catch (error) {
         console.error('Error fetching bills:', error);
         console.error('Stack trace:', error.stack);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+export const updateBill = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, totalAmount, paidAmount, paymentPeriod, collectorName } = req.body;
+
+        console.log(`Updating bill ${id} with data:`, req.body);
+
+        // Find the bill
+        const bill = await Bill.findByPk(id, {
+            include: [
+                {
+                    model: Household,
+                    as: 'household',
+                    attributes: ['ownerName']
+                },
+                {
+                    model: User,
+                    as: 'collector',
+                    attributes: ['fullName']
+                }
+            ]
+        });
+
+        if (!bill) {
+            return res.status(404).json({ message: 'Bill not found' });
+        }
+
+        // Update fields if provided
+        if (title !== undefined) bill.title = title;
+        if (totalAmount !== undefined) bill.totalAmount = totalAmount;
+        if (paidAmount !== undefined) {
+            // Validate paidAmount <= totalAmount
+            const currentTotalAmount = totalAmount !== undefined ? totalAmount : bill.totalAmount;
+            if (paidAmount > currentTotalAmount) {
+                return res.status(400).json({ 
+                    message: 'Số tiền đã trả không được lớn hơn tổng tiền' 
+                });
+            }
+            bill.paidAmount = paidAmount;
+        }
+
+        // Không update billingPeriod vì nếu thanh toán bù thì kì vẫn là thời gian đó
+        // Thời gian thu đã được cập nhật vào log
+
+
+        // Automatically calculate payment status based on amounts
+        const currentTotalAmount = totalAmount !== undefined ? totalAmount : bill.totalAmount;
+        const currentPaidAmount = paidAmount !== undefined ? paidAmount : bill.paidAmount;
+        
+        if (currentPaidAmount >= currentTotalAmount && currentTotalAmount > 0) {
+            bill.paymentStatus = 'PAID';
+        } else if (currentPaidAmount > 0 && currentPaidAmount < currentTotalAmount) {
+            bill.paymentStatus = 'PARTIAL';
+        } else {
+            bill.paymentStatus = 'UNPAID';
+        }
+
+        // Handle collector name
+        if (collectorName !== undefined) {
+            if (collectorName) {
+                // Find user by full name
+                const collector = await User.findOne({
+                    where: { fullName: collectorName }
+                });
+                bill.collectorId = collector ? collector.userId : null;
+            } else {
+                bill.collectorId = null;
+            }
+        }
+
+        await bill.save();
+
+        // Fetch updated bill with associations
+        const updatedBill = await Bill.findByPk(id, {
+            include: [
+                {
+                    model: Household,
+                    as: 'household',
+                    attributes: ['ownerName']
+                },
+                {
+                    model: User,
+                    as: 'collector',
+                    attributes: ['fullName']
+                }
+            ]
+        });
+
+        const billData = updatedBill.toJSON();
+        
+        // Transform status (check for overdue)
+        let displayStatus = 'Chưa thanh toán';
+        if (billData.paymentStatus === 'PAID') {
+            displayStatus = 'Đã thanh toán';
+        } else if (billData.paymentStatus === 'PARTIAL') {
+            displayStatus = 'Thanh toán một phần';
+        } else if (billData.paymentStatus === 'UNPAID') {
+            const billingDate = new Date(billData.billingPeriod);
+            const currentDate = new Date();
+            const billingMonth = billingDate.getMonth();
+            const billingYear = billingDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            if (billingYear < currentYear || (billingYear === currentYear && billingMonth < currentMonth)) {
+                displayStatus = 'Quá hạn';
+            }
+        }
+
+        res.status(200).json({
+            billId: billData.billId,
+            householdName: billData.household?.ownerName || '',
+            title: billData.title,
+            totalAmount: billData.totalAmount,
+            paidAmount: billData.paidAmount,
+            paymentPeriod: new Date(billData.billingPeriod).toISOString().slice(0, 7),
+            status: displayStatus,
+            collectorName: billData.collector?.fullName || null,
+            createdAt: billData.createdAt
+        });
+    } catch (error) {
+        console.error('Error updating bill:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+export const deleteBill = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        console.log(`Deleting bill ${id}`);
+
+        const bill = await Bill.findByPk(id);
+
+        if (!bill) {
+            return res.status(404).json({ message: 'Bill not found' });
+        }
+
+        await bill.destroy();
+
+        res.status(200).json({ message: 'Bill deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting bill:', error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };

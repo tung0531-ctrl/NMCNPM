@@ -1,6 +1,6 @@
 -- Tạo database
-CREATE DATABASE IF NOT EXISTS ApartmentManagement;
-USE ApartmentManagement;
+CREATE DATABASE IF NOT EXISTS BlueMoon;
+USE BlueMoon;
 
 -- =============================================
 -- 1. QUẢN LÝ HỆ THỐNG & PHÂN QUYỀN (Epic E05)
@@ -13,9 +13,9 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100),
     -- Chỉ giữ lại ADMIN (BQL) và CUDAN
-    role ENUM('ADMIN', 'RESIDENT') NOT NULL DEFAULT 'RESIDENT',
+    role ENUM('ADMIN', 'CUDAN') NOT NULL DEFAULT 'CUDAN',
     status ENUM('ACTIVE', 'LOCKED') DEFAULT 'ACTIVE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -34,16 +34,6 @@ CREATE TABLE audit_logs (
     ip_address VARCHAR(45),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
--- Sessions
-CREATE TABLE sessions (
-    session_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 -- =============================================
@@ -139,11 +129,31 @@ CREATE TABLE transactions (
     FOREIGN KEY (collector_id) REFERENCES users(user_id)
 );
 
+
+
+-- =============================================
+-- 17/12/2025: Thay đổi cách thức ghi nhận thu phí
+DROP TABLE IF EXISTS bill_details;
+DROP TABLE IF EXISTS transactions;
+
+-- Thêm cột Loại phí tham chiếu sang bảng fee_types
+ALTER TABLE bills
+ADD COLUMN fee_type_id INT NOT NULL,
+ADD CONSTRAINT fk_bill_fee_type
+FOREIGN KEY (fee_type_id) REFERENCES fee_types(fee_type_id);
+
+-- Định danh người thực hiện thu tiền tham chiếu bảng users
+ALTER TABLE bills
+ADD COLUMN collector_id INT NULL,
+ADD CONSTRAINT fk_bill_collector
+FOREIGN KEY (collector_id) REFERENCES users(user_id);
+
+
 -- =============================================
 -- INDEXES
 -- =============================================
 CREATE INDEX idx_household_search ON households(household_code, owner_name, address);
 CREATE INDEX idx_resident_search ON residents(full_name, identity_card_number);
-CREATE INDEX idx_bill_period ON bills(billing_period, payment_status);
-CREATE INDEX idx_user ON users(username, email);
-CREATE INDEX idx_session_user ON sessions(user_id);
+CREATE INDEX idx_bills_household_id ON bills(household_id);
+CREATE INDEX idx_bills_fee_status ON bills(fee_type_id, payment_status);
+CREATE INDEX idx_bills_period_status ON bills(billing_period, payment_status);
