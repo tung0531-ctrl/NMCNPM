@@ -5,6 +5,9 @@ import { initDatabase } from "./libs/db.js";
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
 import billRoute from "./routes/billRoute.js";
+import feeTypeRoute from "./routes/feeTypeRoute.js";
+import householdRoute from "./routes/householdRoute.js";
+import adminRoute from "./routes/adminRoute.js";
 import { protectedRoute } from "./middlewares/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
@@ -35,6 +38,9 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', authRoute);
 app.use('/api/bills', billRoute); // Add bill route
+app.use('/api/fee-types', feeTypeRoute); // Add fee type route
+app.use('/api/households', householdRoute); // Add household route
+app.use('/api/admins', adminRoute); // Add admin route
 // Private route
 app.use(protectedRoute);
 app.use('/api/users', userRoute);

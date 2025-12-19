@@ -64,11 +64,13 @@ export const getBills = async (filters?: BillFilters): Promise<BillsResponse> =>
 };
 
 export interface UpdateBillData {
+    householdId?: number;
     title?: string;
     totalAmount?: number;
     paidAmount?: number;
     paymentPeriod?: string;
     collectorName?: string;
+    feeTypeId?: number;
 }
 
 export const updateBill = async (billId: number, data: UpdateBillData): Promise<Bill> => {
@@ -77,6 +79,26 @@ export const updateBill = async (billId: number, data: UpdateBillData): Promise<
         return response.data;
     } catch (error: any) {
         console.error('updateBill error:', error);
+        throw error;
+    }
+};
+
+export interface CreateBillData {
+    householdId: number;
+    title: string;
+    totalAmount: number;
+    paidAmount: number;
+    paymentPeriod: string;
+    collectorName?: string;
+    feeTypeId?: number;
+}
+
+export const createBill = async (data: CreateBillData): Promise<Bill> => {
+    try {
+        const response = await axios.post('/bills', data);
+        return response.data;
+    } catch (error: any) {
+        console.error('createBill error:', error);
         throw error;
     }
 };

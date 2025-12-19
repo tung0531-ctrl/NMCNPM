@@ -1,11 +1,45 @@
 import Bill from '../models/Bill.js';
 import Household from '../models/Household.js';
 import User from '../models/User.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 // Set up associations
 Bill.belongsTo(Household, { foreignKey: 'householdId', as: 'household' });
 Bill.belongsTo(User, { foreignKey: 'collectorId', as: 'collector' });
+
+// Helper function to calculate payment status based on amounts and billing period
+const calculatePaymentStatus = (totalAmount, paidAmount, billingPeriod) => {
+    const total = Number(totalAmount);
+    const paid = Number(paidAmount);
+    
+    // Check if fully paid
+    if (paid >= total && total > 0) {
+        return 'Đã thanh toán';
+    }
+    
+    // Check if partially paid
+    if (paid > 0 && paid < total) {
+        return 'Thanh toán một phần';
+    }
+    
+    // Unpaid - check if overdue
+    if (paid === 0) {
+        const billingDate = new Date(billingPeriod);
+        const currentDate = new Date();
+        const billingMonth = billingDate.getMonth();
+        const billingYear = billingDate.getFullYear();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+        
+        if (billingYear < currentYear || (billingYear === currentYear && billingMonth < currentMonth)) {
+            return 'Quá hạn';
+        }
+        
+        return 'Chưa thanh toán';
+    }
+    
+    return 'Chưa thanh toán';
+};
 
 export const getAllBills = async (req, res) => {
     try {
@@ -17,9 +51,9 @@ export const getAllBills = async (req, res) => {
         const offset = (page - 1) * limit;
 
         // Get search filters from query string
-        const { householdName, paymentPeriod, status, collectorName } = req.query;
+        const { bill_id,householdName, paymentPeriod, status, collectorName } = req.query;
         
-        console.log('Filters:', { householdName, paymentPeriod, status, collectorName });
+        console.log('Filters:', { bill_id,householdName, paymentPeriod, status, collectorName });
 
         // Build where clause for bills table
         const billWhere = {};
@@ -41,16 +75,15 @@ export const getAllBills = async (req, res) => {
             }
         }
         
-        // Map frontend status to database ENUM values
-        if (status) {
-            const statusMap = {
-                'Đã thanh toán': 'PAID',
-                'Chưa thanh toán': 'UNPAID',
-                'Thanh toán một phần': 'PARTIAL'
-            };
-            billWhere.paymentStatus = statusMap[status] || status;
-        }
+        // Note: Status filtering will be done after fetching data
+        // because status is calculated dynamically from totalAmount, paidAmount, and billingPeriod
+        // No database-level filtering for status
         
+        // Filter by bill ID - exact match by number
+        if (bill_id) {
+            billWhere.billId = parseInt(bill_id);
+        }
+
         // Filter by household name
         if (householdName) {
             householdWhere.ownerName = {
@@ -67,8 +100,10 @@ export const getAllBills = async (req, res) => {
 
         console.log('Fetching bills from database...');
         
-        // Fetch bills with joins
-        const { count, rows } = await Bill.findAndCountAll({
+        // All status filters need post-filtering because status is calculated dynamically
+        const needsPostFiltering = !!status;
+        
+        const queryOptions = {
             where: billWhere,
             include: [
                 {
@@ -86,38 +121,33 @@ export const getAllBills = async (req, res) => {
                     required: false
                 }
             ],
-            limit,
-            offset,
             order: [['createdAt', 'DESC']],
             distinct: true
-        });
+        };
+        
+        // Only add limit/offset if we don't need post-filtering
+        if (!needsPostFiltering) {
+            queryOptions.limit = limit;
+            queryOptions.offset = offset;
+        }
+        
+        const { count, rows } = await Bill.findAndCountAll(queryOptions);
 
-        console.log(`Found ${count} bills`);
+        console.log(`Found ${count} bills from database`);
 
         // Transform data for frontend
-        const transformedBills = rows.map(bill => {
+        let transformedBills = rows.map(bill => {
             const billData = bill.toJSON();
             
-            // Determine status including overdue
-            let displayStatus = 'Chưa thanh toán';
-            if (billData.paymentStatus === 'PAID') {
-                displayStatus = 'Đã thanh toán';
-            } else if (billData.paymentStatus === 'PARTIAL') {
-                displayStatus = 'Thanh toán một phần';
-            } else if (billData.paymentStatus === 'UNPAID') {
-                const billingDate = new Date(billData.billingPeriod);
-                const currentDate = new Date();
-                const billingMonth = billingDate.getMonth();
-                const billingYear = billingDate.getFullYear();
-                const currentMonth = currentDate.getMonth();
-                const currentYear = currentDate.getFullYear();
-                
-                if (billingYear < currentYear || (billingYear === currentYear && billingMonth < currentMonth)) {
-                    displayStatus = 'Quá hạn';
-                }
-            }
+            // Calculate status dynamically based on amounts and billing period
+            const displayStatus = calculatePaymentStatus(
+                billData.totalAmount,
+                billData.paidAmount,
+                billData.billingPeriod
+            );
             
-            if (status === 'Quá hạn' && displayStatus !== 'Quá hạn') {
+            // Filter by status if specified
+            if (status && status !== displayStatus) {
                 return null;
             }
             
@@ -134,16 +164,27 @@ export const getAllBills = async (req, res) => {
             };
         }).filter(bill => bill !== null);
 
-        const totalPages = Math.ceil(count / limit);
+        // Apply pagination after filtering if needed
+        let finalBills = transformedBills;
+        let totalCount = transformedBills.length;
+        
+        if (needsPostFiltering) {
+            totalCount = transformedBills.length;
+            finalBills = transformedBills.slice(offset, offset + limit);
+        } else {
+            totalCount = count;
+        }
+
+        const totalPages = Math.ceil(totalCount / limit);
 
         console.log('Sending response...');
         
         res.status(200).json({
-            bills: transformedBills,
+            bills: finalBills,
             pagination: {
                 currentPage: page,
                 totalPages,
-                totalItems: count,
+                totalItems: totalCount,
                 itemsPerPage: limit
             }
         });
@@ -157,7 +198,7 @@ export const getAllBills = async (req, res) => {
 export const updateBill = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, totalAmount, paidAmount, paymentPeriod, collectorName } = req.body;
+        const { householdId, title, totalAmount, paidAmount, paymentPeriod, collectorName, feeTypeId } = req.body;
 
         console.log(`Updating bill ${id} with data:`, req.body);
 
@@ -181,9 +222,19 @@ export const updateBill = async (req, res) => {
             return res.status(404).json({ message: 'Bill not found' });
         }
 
+        // Update household if provided
+        if (householdId !== undefined) {
+            const household = await Household.findByPk(householdId);
+            if (!household) {
+                return res.status(404).json({ message: 'Household not found' });
+            }
+            bill.householdId = householdId;
+        }
+
         // Update fields if provided
         if (title !== undefined) bill.title = title;
         if (totalAmount !== undefined) bill.totalAmount = totalAmount;
+        if (feeTypeId !== undefined) bill.feeTypeId = feeTypeId;
         if (paidAmount !== undefined) {
             // Validate paidAmount <= totalAmount
             const currentTotalAmount = totalAmount !== undefined ? totalAmount : bill.totalAmount;
@@ -195,28 +246,22 @@ export const updateBill = async (req, res) => {
             bill.paidAmount = paidAmount;
         }
 
-        // Không update billingPeriod vì nếu thanh toán bù thì kì vẫn là thời gian đó
-        // Thời gian thu đã được cập nhật vào log
-
-
-        // Automatically calculate payment status based on amounts
-        const currentTotalAmount = totalAmount !== undefined ? totalAmount : bill.totalAmount;
-        const currentPaidAmount = paidAmount !== undefined ? paidAmount : bill.paidAmount;
-        
-        if (currentPaidAmount >= currentTotalAmount && currentTotalAmount > 0) {
-            bill.paymentStatus = 'PAID';
-        } else if (currentPaidAmount > 0 && currentPaidAmount < currentTotalAmount) {
-            bill.paymentStatus = 'PARTIAL';
-        } else {
-            bill.paymentStatus = 'UNPAID';
+        // Update billing period if provided (format: YYYY-MM)
+        if (paymentPeriod !== undefined) {
+            const [year, month] = paymentPeriod.split('-');
+            if (year < 1 || month < 1 || month > 12) {
+                return res.status(400).json({ message: 'Sai định dạng ngày tháng. Sử dụng YYYY-MM' });
+            }
+            bill.billingPeriod = new Date(year, month, 1);
         }
+
 
         // Handle collector name
         if (collectorName !== undefined) {
             if (collectorName) {
-                // Find user by full name
+                // Chỉ cho phép người thu có tên trong bảng users với role ADMIN
                 const collector = await User.findOne({
-                    where: { fullName: collectorName }
+                    where: { fullName: collectorName, role: 'ADMIN' }
                 });
                 bill.collectorId = collector ? collector.userId : null;
             } else {
@@ -244,24 +289,12 @@ export const updateBill = async (req, res) => {
 
         const billData = updatedBill.toJSON();
         
-        // Transform status (check for overdue)
-        let displayStatus = 'Chưa thanh toán';
-        if (billData.paymentStatus === 'PAID') {
-            displayStatus = 'Đã thanh toán';
-        } else if (billData.paymentStatus === 'PARTIAL') {
-            displayStatus = 'Thanh toán một phần';
-        } else if (billData.paymentStatus === 'UNPAID') {
-            const billingDate = new Date(billData.billingPeriod);
-            const currentDate = new Date();
-            const billingMonth = billingDate.getMonth();
-            const billingYear = billingDate.getFullYear();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
-            
-            if (billingYear < currentYear || (billingYear === currentYear && billingMonth < currentMonth)) {
-                displayStatus = 'Quá hạn';
-            }
-        }
+        // Calculate status dynamically based on amounts and billing period
+        const displayStatus = calculatePaymentStatus(
+            billData.totalAmount,
+            billData.paidAmount,
+            billData.billingPeriod
+        );
 
         res.status(200).json({
             billId: billData.billId,
@@ -276,6 +309,100 @@ export const updateBill = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating bill:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+export const createBill = async (req, res) => {
+    try {
+        const { householdId, title, totalAmount, paidAmount, paymentPeriod, collectorName, feeTypeId } = req.body;
+
+        console.log('Creating bill with data:', req.body);
+
+        // Validate required fields
+        if (!householdId || !title || totalAmount === undefined || paidAmount === undefined || !paymentPeriod) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Validate paidAmount <= totalAmount
+        if (paidAmount > totalAmount) {
+            return res.status(400).json({ 
+                message: 'Số tiền đã trả không được lớn hơn tổng tiền' 
+            });
+        }
+
+        // Parse payment period (format: YYYY-MM)
+        const [year, month] = paymentPeriod.split('-');
+        if (!year || !month) {
+            return res.status(400).json({ message: 'Invalid payment period format. Use YYYY-MM' });
+        }
+        const billingPeriod = new Date(year, month - 1, 1);
+
+        // Find household
+        const household = await Household.findByPk(householdId);
+        if (!household) {
+            return res.status(404).json({ message: 'Household not found' });
+        }
+
+        // Find collector if provided
+        let collectorId = null;
+        if (collectorName) {
+            const collector = await User.findOne({
+                where: { fullName: collectorName, role: 'ADMIN' }
+            });
+            collectorId = collector ? collector.userId : null;
+        }
+
+        // Create bill
+        const bill = await Bill.create({
+            householdId,
+            title,
+            totalAmount,
+            paidAmount,
+            billingPeriod,
+            collectorId,
+            feeTypeId: feeTypeId || null,
+            createdBy: req.user.userId
+        });
+
+        // Fetch created bill with associations
+        const createdBill = await Bill.findByPk(bill.billId, {
+            include: [
+                {
+                    model: Household,
+                    as: 'household',
+                    attributes: ['ownerName']
+                },
+                {
+                    model: User,
+                    as: 'collector',
+                    attributes: ['fullName']
+                }
+            ]
+        });
+
+        const billData = createdBill.toJSON();
+        
+        // Calculate status dynamically
+        const displayStatus = calculatePaymentStatus(
+            billData.totalAmount,
+            billData.paidAmount,
+            billData.billingPeriod
+        );
+
+        res.status(201).json({
+            billId: billData.billId,
+            householdName: billData.household?.ownerName || '',
+            title: billData.title,
+            totalAmount: billData.totalAmount,
+            paidAmount: billData.paidAmount,
+            paymentPeriod: new Date(billData.billingPeriod).toISOString().slice(0, 7),
+            status: displayStatus,
+            collectorName: billData.collector?.fullName || null,
+            createdAt: billData.createdAt
+        });
+    } catch (error) {
+        console.error('Error creating bill:', error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };

@@ -27,10 +27,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { getBills, updateBill, deleteBill, type Bill, type BillFilters, type UpdateBillData } from '@/services/billService';
+import { getBills, createBill, updateBill, deleteBill, type Bill, type BillFilters, type UpdateBillData, type CreateBillData } from '@/services/billService';
+import { getActiveFeeTypes, type FeeType } from '@/services/feeTypeService';
+import { getAllHouseholds, type Household } from '@/services/householdService';
+import { getAllAdmins, type Admin } from '@/services/adminService';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2, Plus } from 'lucide-react';
 
 const BillManagementPage = () => {
     const navigate = useNavigate();
@@ -38,7 +41,15 @@ const BillManagementPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
+    // Fee types state
+    const [feeTypes, setFeeTypes] = useState<FeeType[]>([]);
+    const [households, setHouseholds] = useState<Household[]>([]);
+    const [admins, setAdmins] = useState<Admin[]>([]);
+    const [selectedFeeType, setSelectedFeeType] = useState<string>('other');
+    const [selectedFeeTypeCreate, setSelectedFeeTypeCreate] = useState<string>('other');
+    
     // Dialog states
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
@@ -64,6 +75,9 @@ const BillManagementPage = () => {
 
     // Form for editing
     const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateBillData>();
+    
+    // Form for creating
+    const { register: registerCreate, handleSubmit: handleSubmitCreate, reset: resetCreate, formState: { errors: errorsCreate }, setValue: setValueCreate } = useForm<CreateBillData>();
 
     const fetchBills = useCallback(async () => {
         console.log('fetchBills called with filters:', filters);
@@ -95,6 +109,36 @@ const BillManagementPage = () => {
         fetchBills();
     }, [fetchBills]);
 
+    useEffect(() => {
+        const loadFeeTypes = async () => {
+            try {
+                const types = await getActiveFeeTypes();
+                setFeeTypes(types);
+            } catch (err) {
+                console.error('Error loading fee types:', err);
+            }
+        };
+        const loadHouseholds = async () => {
+            try {
+                const households = await getAllHouseholds();
+                setHouseholds(households);
+            } catch (err) {
+                console.error('Error loading households:', err);
+            }
+        };
+        const loadAdmins = async () => {
+            try {
+                const admins = await getAllAdmins();
+                setAdmins(admins);
+            } catch (err) {
+                console.error('Error loading admins:', err);
+            }
+        };
+        loadFeeTypes();
+        loadHouseholds();
+        loadAdmins();
+    }, []);
+
     const handleSearch = () => {
         setFilters(prev => ({ ...prev, page: 1 }));
         fetchBills();
@@ -106,7 +150,13 @@ const BillManagementPage = () => {
 
     const handleEdit = (bill: Bill) => {
         setSelectedBill(bill);
+        setSelectedFeeType('other'); // Default to "Khác"
+        
+        // Find household by name
+        const household = households.find(h => h.ownerName === bill.householdName);
+        
         reset({
+            householdId: household?.householdId,
             title: bill.title,
             totalAmount: Number(bill.totalAmount),
             paidAmount: Number(bill.paidAmount),
@@ -114,6 +164,76 @@ const BillManagementPage = () => {
             collectorName: bill.collectorName || '',
         });
         setIsEditDialogOpen(true);
+    };
+
+    const handleFeeTypeChange = (feeTypeId: string) => {
+        setSelectedFeeType(feeTypeId);
+        
+        if (feeTypeId === 'other') {
+            // Allow editing when "Khác" is selected
+            return;
+        }
+        
+        // Auto-fill from selected fee type
+        const feeType = feeTypes.find(ft => ft.feeTypeId.toString() === feeTypeId);
+        if (feeType) {
+            const household = households.find(h => h.ownerName === selectedBill?.householdName);
+            reset({
+                householdId: household?.householdId,
+                title: feeType.feeName,
+                totalAmount: Number(feeType.unitPrice),
+                paidAmount: Number(selectedBill?.paidAmount || 0),
+                paymentPeriod: selectedBill?.paymentPeriod || '',
+                collectorName: selectedBill?.collectorName || '',
+                feeTypeId: feeType.feeTypeId,
+            });
+        }
+    };
+
+    const handleFeeTypeChangeCreate = (feeTypeId: string) => {
+        setSelectedFeeTypeCreate(feeTypeId);
+        
+        if (feeTypeId === 'other') {
+            // Allow editing when "Khác" is selected
+            return;
+        }
+        
+        // Auto-fill from selected fee type
+        const feeType = feeTypes.find(ft => ft.feeTypeId.toString() === feeTypeId);
+        if (feeType) {
+            setValueCreate('title', feeType.feeName);
+            setValueCreate('totalAmount', Number(feeType.unitPrice));
+            setValueCreate('feeTypeId', feeType.feeTypeId);
+        }
+    };
+
+    const handleCreate = () => {
+        setSelectedFeeTypeCreate('other');
+        resetCreate({
+            householdId: undefined,
+            title: '',
+            totalAmount: 0,
+            paidAmount: 0,
+            paymentPeriod: '',
+            collectorName: '',
+        });
+        setIsCreateDialogOpen(true);
+    };
+
+    const onSubmitCreate = async (data: CreateBillData) => {
+        try {
+            setIsSubmitting(true);
+            const newBill = await createBill(data);
+            setIsCreateDialogOpen(false);
+            
+            // Add new bill to the list
+            setBills(prevBills => [newBill, ...prevBills]);
+        } catch (err) {
+            console.error('Error creating bill:', err);
+            setError('Không thể tạo khoản thu. Vui lòng thử lại.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDelete = (bill: Bill) => {
@@ -163,7 +283,7 @@ const BillManagementPage = () => {
         switch(status) {
             case 'Đã thanh toán': return 'bg-green-100 text-green-800';
             case 'Chưa thanh toán': return 'bg-red-100 text-red-800';
-            case 'Quá hạn': return 'bg-yellow-100 text-yellow-800';
+            case 'Quá hạn': return 'bg-gray-100 text-gray-800';
             case 'Thanh toán một phần': return 'bg-orange-100 text-orange-800';
             default: return 'bg-gray-100 text-gray-800';
         }
@@ -183,16 +303,32 @@ const BillManagementPage = () => {
                                         Theo dõi và quản lý các khoản thu phí của hộ gia đình
                                     </p>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => navigate('/')}
-                                >
-                                    ← Về trang chủ
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button onClick={handleCreate}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Thêm khoản thu
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate('/')}
+                                    >
+                                        ← Về trang chủ
+                                    </Button>
+                                </div>
                             </div>
 
                             {/* Filters */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="billId">ID hóa đơn</Label>
+                                    <Input
+                                        id="billId"
+                                        type="number"
+                                        placeholder="Nhập ID..."
+                                        value={filters.bill_id || ''}
+                                        onChange={(e) => setFilters({ ...filters, bill_id: e.target.value })}
+                                    />
+                                </div>
                                 <div className="flex flex-col gap-2">
                                     <Label htmlFor="householdName">Tên hộ</Label>
                                     <Input
@@ -224,8 +360,9 @@ const BillManagementPage = () => {
                                     >
                                         <option value="">Tất cả</option>
                                         <option value="Đã thanh toán">Đã thanh toán</option>
-                                        <option value="Chưa thanh toán">Chưa thanh toán</option>
                                         <option value="Thanh toán một phần">Thanh toán một phần</option>
+                                        <option value="Chưa thanh toán">Chưa thanh toán</option>
+                                        <option value="Quá hạn">Quá hạn</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-col gap-2">
@@ -523,11 +660,54 @@ const BillManagementPage = () => {
                     <form onSubmit={handleSubmit(onSubmitEdit)}>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
+                                <Label htmlFor="edit-household">Hộ gia đình</Label>
+                                <select
+                                    id="edit-household"
+                                    title="Hộ gia đình"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    {...register('householdId', { 
+                                        required: 'Vui lòng chọn hộ gia đình',
+                                        valueAsNumber: true 
+                                    })}
+                                >
+                                    <option value="">-- Chọn hộ gia đình --</option>
+                                    {households.map(h => (
+                                        <option key={h.householdId} value={h.householdId}>
+                                            {h.ownerName} - {h.householdCode}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.householdId && (
+                                    <p className="text-sm text-red-500">{errors.householdId.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-feeType">Danh mục khoản thu</Label>
+                                <select
+                                    id="edit-feeType"
+                                    title="Danh mục khoản thu"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    value={selectedFeeType}
+                                    onChange={(e) => handleFeeTypeChange(e.target.value)}
+                                >
+                                    <option value="other">Khác</option>
+                                    {feeTypes.map(ft => (
+                                        <option key={ft.feeTypeId} value={ft.feeTypeId.toString()}>
+                                            {ft.feeName} - {ft.unitPrice.toLocaleString()} VNĐ/{ft.unit}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid gap-2">
                                 <Label htmlFor="edit-title">Tiêu đề</Label>
                                 <Input
                                     id="edit-title"
                                     {...register('title', { required: 'Tiêu đề là bắt buộc' })}
                                     placeholder="Nhập tiêu đề..."
+                                    disabled={selectedFeeType !== 'other'}
+                                    className={selectedFeeType !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
                                 />
                                 {errors.title && (
                                     <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -544,6 +724,8 @@ const BillManagementPage = () => {
                                         min: { value: 0, message: 'Tổng tiền phải lớn hơn hoặc bằng 0' }
                                     })}
                                     placeholder="Nhập tổng tiền..."
+                                    disabled={selectedFeeType !== 'other'}
+                                    className={selectedFeeType !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
                                 />
                                 {errors.totalAmount && (
                                     <p className="text-sm text-red-500">{errors.totalAmount.message}</p>
@@ -584,11 +766,19 @@ const BillManagementPage = () => {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="edit-collectorName">Người thu</Label>
-                                <Input
+                                <select
                                     id="edit-collectorName"
+                                    title="Người thu"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     {...register('collectorName')}
-                                    placeholder="Nhập tên người thu..."
-                                />
+                                >
+                                    <option value="">-- Không chọn --</option>
+                                    {admins.map(admin => (
+                                        <option key={admin.userId} value={admin.fullName}>
+                                            {admin.fullName} ({admin.username})
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                         <DialogFooter>
@@ -602,6 +792,158 @@ const BillManagementPage = () => {
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Create Dialog */}
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                        <DialogTitle>Thêm khoản thu mới</DialogTitle>
+                        <DialogDescription>
+                            Tạo khoản thu cho hộ gia đình
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmitCreate(onSubmitCreate)}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-household">Hộ gia đình</Label>
+                                <select
+                                    id="create-household"
+                                    title="Hộ gia đình"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    {...registerCreate('householdId', { 
+                                        required: 'Vui lòng chọn hộ gia đình',
+                                        valueAsNumber: true 
+                                    })}
+                                >
+                                    <option value="">-- Chọn hộ gia đình --</option>
+                                    {households.map(h => (
+                                        <option key={h.householdId} value={h.householdId}>
+                                            {h.ownerName} - {h.householdCode}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errorsCreate.householdId && (
+                                    <p className="text-sm text-red-500">{errorsCreate.householdId.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-feeType">Danh mục khoản thu</Label>
+                                <select
+                                    id="create-feeType"
+                                    title="Danh mục khoản thu"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    value={selectedFeeTypeCreate}
+                                    onChange={(e) => handleFeeTypeChangeCreate(e.target.value)}
+                                >
+                                    <option value="other">Khác</option>
+                                    {feeTypes.map(ft => (
+                                        <option key={ft.feeTypeId} value={ft.feeTypeId.toString()}>
+                                            {ft.feeName} - {ft.unitPrice.toLocaleString()} VNĐ/{ft.unit}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-title">Tiêu đề</Label>
+                                <Input
+                                    id="create-title"
+                                    {...registerCreate('title', { required: 'Tiêu đề là bắt buộc' })}
+                                    placeholder="Nhập tiêu đề..."
+                                    disabled={selectedFeeTypeCreate !== 'other'}
+                                    className={selectedFeeTypeCreate !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
+                                />
+                                {errorsCreate.title && (
+                                    <p className="text-sm text-red-500">{errorsCreate.title.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-totalAmount">Tổng tiền (VNĐ)</Label>
+                                <Input
+                                    id="create-totalAmount"
+                                    type="number"
+                                    {...registerCreate('totalAmount', { 
+                                        required: 'Tổng tiền là bắt buộc',
+                                        min: { value: 0, message: 'Tổng tiền phải lớn hơn hoặc bằng 0' },
+                                        valueAsNumber: true
+                                    })}
+                                    placeholder="Nhập tổng tiền..."
+                                    disabled={selectedFeeTypeCreate !== 'other'}
+                                    className={selectedFeeTypeCreate !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
+                                />
+                                {errorsCreate.totalAmount && (
+                                    <p className="text-sm text-red-500">{errorsCreate.totalAmount.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-paidAmount">Số tiền đã trả (VNĐ)</Label>
+                                <Input
+                                    id="create-paidAmount"
+                                    type="number"
+                                    {...registerCreate('paidAmount', { 
+                                        required: 'Số tiền đã trả là bắt buộc',
+                                        min: { value: 0, message: 'Số tiền đã trả phải lớn hơn hoặc bằng 0' },
+                                        valueAsNumber: true,
+                                        validate: (value, formValues) => {
+                                            const totalAmount = formValues.totalAmount || 0;
+                                            return Number(value) <= Number(totalAmount) || 'Số tiền đã trả không được lớn hơn tổng tiền';
+                                        }
+                                    })}
+                                    placeholder="Nhập số tiền đã trả..."
+                                />
+                                {errorsCreate.paidAmount && (
+                                    <p className="text-sm text-red-500">{errorsCreate.paidAmount.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-paymentPeriod">Kỳ thanh toán</Label>
+                                <Input
+                                    id="create-paymentPeriod"
+                                    {...registerCreate('paymentPeriod', { required: 'Kỳ thanh toán là bắt buộc' })}
+                                    placeholder="VD: 2025-12"
+                                />
+                                {errorsCreate.paymentPeriod && (
+                                    <p className="text-sm text-red-500">{errorsCreate.paymentPeriod.message}</p>
+                                )}
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="create-collectorName">Người thu</Label>
+                                <select
+                                    id="create-collectorName"
+                                    title="Người thu"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    {...registerCreate('collectorName')}
+                                >
+                                    <option value="">-- Không chọn --</option>
+                                    {admins.map(admin => (
+                                        <option key={admin.userId} value={admin.fullName}>
+                                            {admin.fullName} ({admin.username})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setIsCreateDialogOpen(false)}
+                                disabled={isSubmitting}
+                            >
+                                Hủy
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? 'Đang tạo...' : 'Tạo khoản thu'}
                             </Button>
                         </DialogFooter>
                     </form>
