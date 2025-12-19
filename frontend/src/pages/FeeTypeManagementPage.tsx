@@ -257,18 +257,24 @@ const FeeTypeManagementPage = () => {
                             {/* Header */}
                             <div className="flex justify-between items-start">
                                 <div className="flex flex-col gap-2">
-                                    <h1 className="text-3xl font-bold">Quản lý loại khoản thu</h1>
+                                    <h1 className="text-3xl font-bold">Quản lý danh mục khoản thu</h1>
                                     <p className="text-muted-foreground">
-                                        Quản lý các loại khoản thu trong hệ thống
+                                        Quản lý các danh mục khoản thu trong hệ thống
                                     </p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button variant="outline" onClick={() => navigate('/bills')}>
+                                    <Button style={{ color: 'red' }} variant="outline" onClick={() => navigate('/bills')}>
                                         Quản lý khoản thu
                                     </Button>
                                     <Button onClick={handleCreate}>
                                         <Plus className="w-4 h-4 mr-2" />
                                         Thêm loại khoản thu
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate('/')}
+                                    >
+                                        ← Về trang chủ
                                     </Button>
                                 </div>
                             </div>
