@@ -5,6 +5,7 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import ChatAppPage from './pages/ChatAppPage';
 import BillManagementPage from './pages/BillManagementPage';
+import FeeTypeManagementPage from './pages/FeeTypeManagementPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -35,6 +36,14 @@ function App() {
       element = {
         <AdminRoute>
           <BillManagementPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/fee-types'
+      element = {
+        <AdminRoute>
+          <FeeTypeManagementPage/>
         </AdminRoute>
       }
       />

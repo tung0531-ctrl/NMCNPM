@@ -33,7 +33,23 @@ const handleOnClick = async () => {
             <Logout/>
           </div>
 
+
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+            {isAdmin && (
+              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">Danh mục Khoản Thu</h2>
+                <p className="text-muted-foreground mb-4">Xem và quản lý các danh mục khoản thu phí</p>
+                <Button 
+                  onClick={() => navigate('/fee-types')} 
+                  className="w-full"
+                >
+                  Truy cập Danh mục Khoản Thu
+                </Button>
+              </div>
+            )}
+
+            
             {isAdmin && (
               <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
                 <h2 className="text-xl font-semibold mb-2">Quản Lý Khoản Thu</h2>
