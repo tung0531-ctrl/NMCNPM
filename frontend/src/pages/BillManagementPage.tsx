@@ -57,6 +57,7 @@ const BillManagementPage = () => {
     
     // Filters state
     const [filters, setFilters] = useState<BillFilters>({
+        billId: '',
         householdName: '',
         paymentPeriod: '',
         status: '',
@@ -80,16 +81,12 @@ const BillManagementPage = () => {
     const { register: registerCreate, handleSubmit: handleSubmitCreate, reset: resetCreate, formState: { errors: errorsCreate }, setValue: setValueCreate } = useForm<CreateBillData>();
 
     const fetchBills = useCallback(async () => {
-        console.log('fetchBills called with filters:', filters);
         try {
             setLoading(true);
             setError(null);
-            console.log('Calling getBills...');
             const response = await getBills(filters);
-            console.log('getBills returned:', response);
             setBills(response.bills);
             setPagination(response.pagination);
-            console.log('Bills set successfully:', response.bills.length);
         } catch (err) {
             const error = err as { message: string; response?: { status: number } };
             console.error('Error fetching bills:', error);
@@ -105,7 +102,6 @@ const BillManagementPage = () => {
     }, [filters]);
 
     useEffect(() => {
-        console.log('BillManagementPage mounted, calling fetchBills');
         fetchBills();
     }, [fetchBills]);
 
@@ -140,8 +136,8 @@ const BillManagementPage = () => {
     }, []);
 
     const handleSearch = () => {
-        setFilters(prev => ({ ...prev, page: 1 }));
-        fetchBills();
+        // Filters are updated in real-time, so fetchBills will be called via useEffect
+        // This function is kept for potential future enhancements
     };
 
     const handlePageChange = (newPage: number) => {
@@ -328,8 +324,8 @@ const BillManagementPage = () => {
                                         id="billId"
                                         type="number"
                                         placeholder="Nhập ID..."
-                                        value={filters.bill_id || ''}
-                                        onChange={(e) => setFilters({ ...filters, bill_id: e.target.value })}
+                                        value={filters.billId || ''}
+                                        onChange={(e) => setFilters({ ...filters, billId: e.target.value })}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
@@ -387,7 +383,7 @@ const BillManagementPage = () => {
                                 <Button 
                                     variant="outline" 
                                     onClick={() => {
-                                        setFilters({ householdName: '', paymentPeriod: '', status: '', collectorName: '', page: 1, limit: 10 });
+                                        setFilters({ billId: '', householdName: '', paymentPeriod: '', status: '', collectorName: '', page: 1, limit: 10 });
                                         fetchBills();
                                     }}
                                 >
@@ -631,7 +627,7 @@ const BillManagementPage = () => {
                                 </Card>
                                 <Card className="border-border">
                                     <CardContent className="p-4">
-                                        <p className="text-sm text-muted-foreground">Tổng doanh thu (trang hiện tại)</p>
+                                        <p className="text-sm text-muted-foreground">Tổng tiền hóa đơn (trang hiện tại)</p>
                                         <p className="text-2xl font-bold">
                                             {bills.reduce((sum, bill) => sum + Number(bill.totalAmount), 0).toLocaleString('vi-VN')} đ
                                         </p>

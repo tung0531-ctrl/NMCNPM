@@ -13,6 +13,7 @@ export interface Bill {
 }
 
 export interface BillFilters {
+    billId?: string;
     householdName?: string;
     paymentPeriod?: string;
     status?: string;

@@ -6,6 +6,7 @@ import SignUpPage from './pages/SignUpPage';
 import ChatAppPage from './pages/ChatAppPage';
 import BillManagementPage from './pages/BillManagementPage';
 import FeeTypeManagementPage from './pages/FeeTypeManagementPage';
+import HouseholdManagementPage from './pages/HouseholdManagementPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -44,6 +45,14 @@ function App() {
       element = {
         <AdminRoute>
           <FeeTypeManagementPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/households'
+      element = {
+        <AdminRoute>
+          <HouseholdManagementPage/>
         </AdminRoute>
       }
       />

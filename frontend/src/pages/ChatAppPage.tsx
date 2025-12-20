@@ -63,6 +63,19 @@ const handleOnClick = async () => {
               </div>
             )}
 
+            {isAdmin && (
+              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">Quản Lý Hộ Gia Đình</h2>
+                <p className="text-muted-foreground mb-4">Xem và quản lý danh sách hộ gia đình</p>
+                <Button 
+                  onClick={() => navigate('/households')} 
+                  className="w-full"
+                >
+                  Truy cập Quản Lý Hộ Gia Đình
+                </Button>
+              </div>
+            )}
+
             <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
               <h2 className="text-xl font-semibold mb-2">Test API</h2>
               <p className="text-muted-foreground mb-4">Kiểm tra kết nối API</p>
