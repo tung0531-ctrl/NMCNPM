@@ -290,7 +290,7 @@ const BillManagementPage = () => {
     };
 
     return (
-        <div className="bg-muted min-h-screen p-6 md:p-10 absolute inset-0 z-0 bg-gradient-purple">
+        <div className="bg-muted min-h-screen p-6 md:p-10 fixed inset-0 z-0 bg-gradient-purple">
             <div className="max-w-7xl mx-auto">
                 <Card className="border-border">
                     <CardContent className="p-6 md:p-8">

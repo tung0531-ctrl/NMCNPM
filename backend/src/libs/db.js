@@ -1,5 +1,6 @@
 // db.js
 import { Sequelize } from 'sequelize';
+import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -35,8 +36,22 @@ export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
 // Initialize database connection
 export const initDatabase = async () => {
     try {
+        // Parse DB_CONNECTION_STRING to create database if not exists
+        const dbUrl = new URL(process.env.DB_CONNECTION_STRING);
+        const serverUrl = `${dbUrl.protocol}//${dbUrl.username}:${dbUrl.password}@${dbUrl.hostname}:${dbUrl.port}`;
+        const dbName = dbUrl.pathname.slice(1); // Remove leading /
+
+        // Create database if not exists
+        const connection = await mysql.createConnection(serverUrl);
+        await connection.execute(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+        await connection.end();
+
         await sequelize.authenticate();
         console.log('Database connection established successfully.');
+        
+        // Sync models to create tables
+        await sequelize.sync({ force: false });
+        console.log('Database tables synchronized successfully.');
         
         return true;
     } catch (error) {
