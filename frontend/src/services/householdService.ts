@@ -36,17 +36,34 @@ export interface CreateHouseholdData {
     userId?: number;
 }
 
+export interface UpdateHouseholdData {
+    householdCode: string;
+    ownerName: string;
+    address: string;
+    areaSqm?: number;
+    userId?: number;
+}
+
 export const getAllHouseholds = async (): Promise<Household[]> => {
     const response = await apiClient.get('/households');
     return response.data.households;
 };
 
 export const getAllHouseholdsForAdmin = async (filters: HouseholdFilters): Promise<HouseholdResponse> => {
-    const response = await apiClient.get('/admins/households', { params: filters });
+    const response = await apiClient.get('/households/admin', { params: filters });
     return response.data;
 };
 
 export const createHousehold = async (data: CreateHouseholdData): Promise<Household> => {
-    const response = await apiClient.post('/admins/households', data);
+    const response = await apiClient.post('/households/admin', data);
     return response.data;
+};
+
+export const updateHousehold = async (householdId: number, data: UpdateHouseholdData): Promise<Household> => {
+    const response = await apiClient.put(`/households/admin/${householdId}`, data);
+    return response.data;
+};
+
+export const deleteHousehold = async (householdId: number): Promise<void> => {
+    await apiClient.delete(`/households/admin/${householdId}`);
 };
