@@ -3,30 +3,36 @@ import User from "../models/User.js";
 
 export const protectedRoute = async (req, res, next) => {
     try {
-        // Lấy token từ header Authorization
-        const authHeader = req.headers["authorization"];
-        const token = authHeader && authHeader.split(" ")[1];
-
-        if (!token) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ message: "Không có token, truy cập bị từ chối." });
         }
-        // Xác minh token
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
-            if (err) {
-                console.error(err)
-                return res.status(403).json({ message: "Token không hợp lệ." });
-            }
 
-            const user = await User.findByPk(decoded.userId);
-            if (!user) {
-                return res.status(404).json({ message: "Người dùng không tồn tại." });
-            }
-            const { passwordHash, ...userWithoutPassword } = user.toJSON();
-            req.user = userWithoutPassword;
-            next();
-        })
+        const token = authHeader.split(" ")[1];
+
+        if (!process.env.ACCESS_TOKEN_SECRET) {
+            throw new Error("ACCESS_TOKEN_SECRET chưa được khai báo");
+        }
+
+        // ✅ verify SYNC để bắt lỗi bằng try/catch
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+        if (!decoded.userId) {
+            return res.status(401).json({ message: "Token thiếu userId." });
+        }
+
+        const user = await User.findByPk(decoded.userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "Người dùng không tồn tại." });
+        }
+
+        const { passwordHash, ...userWithoutPassword } = user.toJSON();
+        req.user = userWithoutPassword;
+
+        next();
     } catch (error) {
-        console.error("Lỗi xác minh JWT trong authMiddleware:", error);
-        return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+        console.error("Lỗi auth middleware:", error);
+        return res.status(401).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
     }
-}
+};

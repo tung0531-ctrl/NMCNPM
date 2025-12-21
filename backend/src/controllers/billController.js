@@ -1,11 +1,5 @@
-import Bill from '../models/Bill.js';
-import Household from '../models/Household.js';
-import User from '../models/User.js';
+import { Bill, Household, User } from '../models/index.js';
 import { Op, Sequelize } from 'sequelize';
-
-// Set up associations
-Bill.belongsTo(Household, { foreignKey: 'householdId', as: 'household' });
-Bill.belongsTo(User, { foreignKey: 'collectorId', as: 'collector' });
 
 // Helper function to calculate payment status based on amounts and billing period
 const calculatePaymentStatus = (totalAmount, paidAmount, billingPeriod) => {
@@ -108,7 +102,7 @@ export const getAllBills = async (req, res) => {
             include: [
                 {
                     model: Household,
-                    as: 'household',
+                    as: 'household_bill',
                     attributes: ['ownerName', 'householdCode', 'address'],
                     where: Object.keys(householdWhere).length > 0 ? householdWhere : undefined,
                     required: true
@@ -207,7 +201,7 @@ export const updateBill = async (req, res) => {
             include: [
                 {
                     model: Household,
-                    as: 'household',
+                    as: 'household_bill',
                     attributes: ['ownerName']
                 },
                 {
@@ -276,7 +270,7 @@ export const updateBill = async (req, res) => {
             include: [
                 {
                     model: Household,
-                    as: 'household',
+                    as: 'household_bill',
                     attributes: ['ownerName']
                 },
                 {
@@ -370,7 +364,7 @@ export const createBill = async (req, res) => {
             include: [
                 {
                     model: Household,
-                    as: 'household',
+                    as: 'household_bill',
                     attributes: ['ownerName']
                 },
                 {

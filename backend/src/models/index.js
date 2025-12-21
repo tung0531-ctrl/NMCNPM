@@ -1,11 +1,12 @@
 import Bill from './Bill.js';
 import Household from './Household.js';
 import User from './User.js';
+import Resident from './Resident.js';
 
 // Define associations
 Bill.belongsTo(Household, {
     foreignKey: 'householdId',
-    as: 'household'
+    as: 'household_bill'
 });
 
 Bill.belongsTo(User, {
@@ -16,11 +17,21 @@ Bill.belongsTo(User, {
 Household.hasMany(Bill, {
     foreignKey: 'householdId',
     as: 'bills'
-});
+}); 
 
 User.hasMany(Bill, {
     foreignKey: 'collectorId',
     as: 'collectedBills'
 });
 
-export { Bill, Household, User };
+Resident.belongsTo(Household, {
+    foreignKey: 'householdId',
+    as: 'household_resident'
+});
+
+Household.hasMany(Resident, {
+    foreignKey: 'householdId',
+    as: 'residents'
+});
+
+export { Bill, Household, User, Resident };

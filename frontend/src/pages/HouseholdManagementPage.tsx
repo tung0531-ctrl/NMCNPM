@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
     getAllHouseholdsForAdmin,
+    createHousehold,
     updateHousehold,
     deleteHousehold,
     type Household,
@@ -38,7 +39,7 @@ import {
 } from '@/services/householdService';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 
 const HouseholdManagementPage = () => {
     const navigate = useNavigate();
@@ -47,6 +48,7 @@ const HouseholdManagementPage = () => {
     const [selectedHousehold, setSelectedHousehold] = useState<Household | null>(null);
     
     // Dialog states
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,6 +115,31 @@ const HouseholdManagementPage = () => {
             limit: 10
         });
     };
+
+    const handleCreate = () => {
+    reset({
+        householdCode: '',
+        ownerName: '',
+        address: '',
+        areaSqm: 0,
+        userId: undefined
+    });
+    setIsCreateDialogOpen(true);
+    };
+
+    const onSubmitCreate = async (data: UpdateHouseholdData) => {
+        try {
+            setIsSubmitting(true);
+            await createHousehold(data);
+            setIsCreateDialogOpen(false);
+            fetchHouseholds(); // reload list
+        } catch (err) {
+            console.error('Error creating household:', err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
 
     const handleEdit = (household: Household) => {
         setSelectedHousehold(household);
@@ -183,9 +210,16 @@ const HouseholdManagementPage = () => {
                                         Quản lý thông tin các hộ gia đình trong hệ thống
                                     </p>
                                 </div>
-                                <Button onClick={() => navigate('/')} variant="outline">
-                                    ← Về trang chủ
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button style={{color: 'red' }} variant="outline" onClick={() => navigate('/residents')}>Danh sách cư dân</Button>
+                                    <Button onClick={handleCreate}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Thêm hộ gia đình
+                                    </Button>
+                                    <Button onClick={() => navigate('/')} variant="outline">
+                                        ← Về trang chủ
+                                    </Button>
+                                </div>
                             </div>
 
                             {/* Filters */}
@@ -418,6 +452,49 @@ const HouseholdManagementPage = () => {
                         </form>
                     </DialogContent>
                 </Dialog>
+
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <DialogContent className="sm:max-w-[525px] border-border">
+                        <DialogHeader>
+                            <DialogTitle>Thêm hộ gia đình</DialogTitle>
+                            <DialogDescription>
+                                Nhập thông tin hộ gia đình mới.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <form onSubmit={handleSubmit(onSubmitCreate)} className="space-y-4">
+                            <div className='grid gap-2'>
+                                <Label>Mã hộ</Label>
+                                <Input {...register('householdCode', { required: true })} />
+                            </div>
+
+                            <div className='grid gap-2'>
+                                <Label>Tên chủ hộ</Label>
+                                <Input {...register('ownerName', { required: true })} />
+                            </div>
+
+                            <div>
+                                <Label>Địa chỉ</Label>
+                                <Input {...register('address', { required: true })} />
+                            </div>
+
+                            <div className='grid gap-2'>
+                                <Label>Diện tích (m²)</Label>
+                                <Input type="number" {...register('areaSqm', { valueAsNumber: true })} />
+                            </div>
+
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                                    Hủy
+                                </Button>
+                                <Button type="submit">
+                                    Thêm mới
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
 
                 {/* Delete Confirmation Dialog */}
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

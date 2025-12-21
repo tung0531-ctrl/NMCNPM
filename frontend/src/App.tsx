@@ -7,6 +7,7 @@ import ChatAppPage from './pages/ChatAppPage';
 import BillManagementPage from './pages/BillManagementPage';
 import FeeTypeManagementPage from './pages/FeeTypeManagementPage';
 import HouseholdManagementPage from './pages/HouseholdManagementPage';
+import ResidentManagementPage from './pages/ResidentManagementPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -53,6 +54,14 @@ function App() {
       element = {
         <AdminRoute>
           <HouseholdManagementPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/residents'
+      element = {
+        <AdminRoute>
+          <ResidentManagementPage/>
         </AdminRoute>
       }
       />
