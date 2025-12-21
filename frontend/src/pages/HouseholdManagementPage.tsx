@@ -170,9 +170,9 @@ const HouseholdManagementPage = () => {
     };
 
     return (
-        <div className="bg-muted min-h-screen p-6 md:p-10">
+        <div className="bg-muted min-h-screen p-6 md:p-10 fixed inset-0 z-0 bg-gradient-purple">
             <div className="max-w-7xl mx-auto">
-                <Card>
+                <Card className="border-border">
                     <CardContent className="p-6 md:p-8">
                         <div className="flex flex-col gap-6">
                             {/* Header */}
@@ -189,7 +189,7 @@ const HouseholdManagementPage = () => {
                             </div>
 
                             {/* Filters */}
-                            <Card>
+                            <Card className="border-border">
                                 <CardContent className="p-6">
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
@@ -234,7 +234,7 @@ const HouseholdManagementPage = () => {
                             </div>
 
                             {/* Households Table */}
-                            <div className="rounded-lg border overflow-hidden">
+                            <div className="rounded-lg border border-border overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead className="bg-muted">
@@ -346,7 +346,7 @@ const HouseholdManagementPage = () => {
 
                 {/* Edit Dialog */}
                 <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                    <DialogContent className="sm:max-w-[425px]">
+                    <DialogContent className="sm:max-w-[425px] border-border">
                         <DialogHeader>
                             <DialogTitle>Chỉnh sửa hộ gia đình</DialogTitle>
                             <DialogDescription>
@@ -421,7 +421,7 @@ const HouseholdManagementPage = () => {
 
                 {/* Delete Confirmation Dialog */}
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="border-border">
                         <AlertDialogHeader>
                             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
                             <AlertDialogDescription>
