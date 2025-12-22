@@ -33,6 +33,17 @@ export const protectedRoute = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Lỗi auth middleware:", error);
-        return res.status(401).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
+
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Access token đã hết hạn",
+                code: "TOKEN_EXPIRED"
+            });
+        }
+
+        return res.status(401).json({
+            message: "Token không hợp lệ",
+            code: "INVALID_TOKEN"
+        });
     }
 };

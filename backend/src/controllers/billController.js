@@ -147,7 +147,7 @@ export const getAllBills = async (req, res) => {
             
             return {
                 billId: billData.billId,
-                householdName: billData.household?.ownerName || '',
+                householdName: billData.household_bill?.ownerName || '',
                 title: billData.title,
                 totalAmount: billData.totalAmount,
                 paidAmount: billData.paidAmount,

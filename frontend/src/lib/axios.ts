@@ -20,7 +20,7 @@ api.interceptors.request.use((config) => {
 
 // tự động gọi refresh api khi access token hết hạn
 export default api;
-api. interceptors.response.use((res) => res, async (error) =>{
+api.interceptors.response.use((res) => res, async (error) =>{
     const originalRequest = error.config;
 
     //những api không cần check
