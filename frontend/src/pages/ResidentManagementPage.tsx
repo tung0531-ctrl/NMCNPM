@@ -42,9 +42,12 @@ import { getAllHouseholds, type Household } from '@/services/householdService';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { MoreVertical, Pencil, Trash2, Plus } from 'lucide-react';
+import { useSearchParams } from 'react-router';
 
 const ResidentManagementPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const householdIdFromQuery = searchParams.get('householdId');
     const [residents, setResidents] = useState<Resident[]>([]);
     const [households, setHouseholds] = useState<Household[]>([]);
     const [loading, setLoading] = useState(false);
@@ -63,7 +66,7 @@ const ResidentManagementPage = () => {
     // Filters state
     const [filters, setFilters] = useState<ResidentFilters>({
         fullName: '',
-        householdId: undefined,
+        householdId: householdIdFromQuery ? Number(householdIdFromQuery) : undefined,
         isStaying: undefined,
         page: 1,
         limit: 10

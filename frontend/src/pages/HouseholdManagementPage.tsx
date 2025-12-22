@@ -39,7 +39,7 @@ import {
 } from '@/services/householdService';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Plus, Trash2, Users } from 'lucide-react';
 
 const HouseholdManagementPage = () => {
     const navigate = useNavigate();
@@ -321,6 +321,10 @@ const HouseholdManagementPage = () => {
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onClick={() => navigate(`/residents?householdId=${household.householdId}`)}>
+                                                                        <Users className="mr-2 h-4 w-4" />
+                                                                        Xem cư dân
+                                                                    </DropdownMenuItem>
                                                                     <DropdownMenuItem onClick={() => handleEdit(household)}>
                                                                         <Pencil className="mr-2 h-4 w-4" />
                                                                         Chỉnh sửa
