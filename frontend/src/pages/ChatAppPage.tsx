@@ -22,7 +22,8 @@ const handleOnClick = async () => {
   }
 }
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 -z-10 bg-gradient-purple" />
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
