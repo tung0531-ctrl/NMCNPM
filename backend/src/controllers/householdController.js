@@ -1,5 +1,6 @@
 import Household from '../models/Household.js';
 import { Op } from 'sequelize';
+import { createLog, LogActions, EntityTypes } from '../utils/logger.js';
 
 // Get all households
 export const getAllHouseholds = async (req, res) => {
@@ -59,6 +60,10 @@ export const getAllHouseholdsForAdmin = async (req, res) => {
             order: [['householdId', 'DESC']]
         });
 
+        // Log view all households activity
+        await createLog(req.user.userId, LogActions.VIEW_ALL_HOUSEHOLDS, EntityTypes.HOUSEHOLD, null, 
+            { count: rows.length, filters: { ownerName, householdCode, address } }, req);
+
         res.json({
             households: rows,
             pagination: {
@@ -107,6 +112,10 @@ export const createHouseholdForAdmin = async (req, res) => {
             areaSqm: areaSqm || null,
             userId: userId || null
         });
+
+        // Log create household activity
+        await createLog(req.user.userId, LogActions.CREATE_HOUSEHOLD, EntityTypes.HOUSEHOLD, newHousehold.householdId, 
+            { householdCode: newHousehold.householdCode, ownerName: newHousehold.ownerName }, req);
 
         res.status(201).json(newHousehold);
     } catch (error) {
@@ -160,6 +169,10 @@ export const updateHouseholdForAdmin = async (req, res) => {
             userId: userId || null
         });
 
+        // Log update household activity
+        await createLog(req.user.userId, LogActions.UPDATE_HOUSEHOLD, EntityTypes.HOUSEHOLD, householdId, 
+            { householdCode: household.householdCode, ownerName: household.ownerName }, req);
+
         res.status(200).json(household);
     } catch (error) {
         console.error('Error updating household:', error);
@@ -182,7 +195,12 @@ export const deleteHouseholdForAdmin = async (req, res) => {
             });
         }
 
+        const householdData = { householdCode: household.householdCode, ownerName: household.ownerName };
+
         await household.destroy();
+
+        // Log delete household activity
+        await createLog(req.user.userId, LogActions.DELETE_HOUSEHOLD, EntityTypes.HOUSEHOLD, householdId, householdData, req);
 
         res.status(200).json({
             message: 'Xóa hộ gia đình thành công'

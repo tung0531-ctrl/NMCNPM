@@ -41,12 +41,12 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoute);
 app.use('/api/bills', billRoute); // Add bill route
 app.use('/api/fee-types', feeTypeRoute); // Add fee type route
-app.use('/api/households', householdRoute); // Add household route
 app.use('/api/admins', adminRoute); // Add admin route
-app.use('/api/residents', residentRoute); // Add resident route
 // Private route
 app.use(protectedRoute);
 app.use('/api/users', userRoute);
+app.use('/api/households', householdRoute); // Add household route (moved to protected section)
+app.use('/api/residents', residentRoute); // Add resident route (moved to protected section)
 app.use('/api/logs', logRoute); // Add log route
 
 // Basic error handling

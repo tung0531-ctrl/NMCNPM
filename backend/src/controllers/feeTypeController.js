@@ -1,5 +1,6 @@
 import FeeType from '../models/FeeType.js';
 import { Op } from 'sequelize';
+import { createLog, LogActions, EntityTypes } from '../utils/logger.js';
 
 // Get all fee types with filtering (for management page)
 export const getAllFeeTypes = async (req, res) => {
@@ -31,6 +32,10 @@ export const getAllFeeTypes = async (req, res) => {
             offset: parseInt(offset),
             order: [['feeTypeId', 'DESC']]
         });
+
+        // Log view all fee types activity
+        await createLog(req.user.userId, LogActions.VIEW_ALL_FEE_TYPES, EntityTypes.FEE_TYPE, null, 
+            { count: rows.length, filters: { feeName, isActive } }, req);
 
         res.json({
             feeTypes: rows,
@@ -95,6 +100,10 @@ export const createFeeType = async (req, res) => {
             isActive: isActive !== undefined ? isActive : true
         });
 
+        // Log create fee type activity
+        await createLog(req.user.userId, LogActions.CREATE_FEE_TYPE, EntityTypes.FEE_TYPE, newFeeType.feeTypeId, 
+            { feeName: newFeeType.feeName, unitPrice: newFeeType.unitPrice }, req);
+
         res.status(201).json(newFeeType);
     } catch (error) {
         console.error('Error creating fee type:', error);
@@ -132,6 +141,10 @@ export const updateFeeType = async (req, res) => {
             isActive: isActive !== undefined ? isActive : feeType.isActive
         });
 
+        // Log update fee type activity
+        await createLog(req.user.userId, LogActions.UPDATE_FEE_TYPE, EntityTypes.FEE_TYPE, id, 
+            { feeName: feeType.feeName, unitPrice: feeType.unitPrice }, req);
+
         res.json(feeType);
     } catch (error) {
         console.error('Error updating fee type:', error);
@@ -153,7 +166,12 @@ export const deleteFeeType = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy loại khoản thu' });
         }
 
+        const feeTypeData = { feeName: feeType.feeName, unitPrice: feeType.unitPrice };
+
         await feeType.destroy();
+
+        // Log delete fee type activity
+        await createLog(req.user.userId, LogActions.DELETE_FEE_TYPE, EntityTypes.FEE_TYPE, id, feeTypeData, req);
 
         res.json({ message: 'Xóa loại khoản thu thành công' });
     } catch (error) {

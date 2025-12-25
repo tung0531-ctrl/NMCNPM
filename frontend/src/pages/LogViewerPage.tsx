@@ -21,12 +21,17 @@ const LogViewerPage = () => {
   const fetchLogs = async () => {
     setLoading(true);
     try {
+      console.log('Fetching logs with filters:', { ...filters, page });
       const data = await logService.getLogs({ ...filters, page });
+      console.log('Logs received:', data);
       setLogs(data.logs);
       setTotalPages(data.totalPages);
       setTotal(data.total);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
+      const err = error as { response?: { data?: { message?: string }; status?: number } };
+      console.error('Error fetching logs:', error);
+      console.error('Error status:', err.response?.status);
+      console.error('Error message:', err.response?.data?.message);
       toast.error(err.response?.data?.message || "Lỗi khi tải log");
     } finally {
       setLoading(false);
@@ -36,16 +41,21 @@ const LogViewerPage = () => {
   useEffect(() => {
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filters.action, filters.entityType, filters.userId, filters.startDate, filters.endDate]);
+  }, [page]);
 
   const handleFilterChange = (key: keyof GetLogsParams, value: unknown) => {
     setFilters({ ...filters, [key]: value });
-    setPage(1); // Reset to first page when filter changes
+  };
+
+  const handleSearch = () => {
+    setPage(1); // Reset to first page when searching
+    fetchLogs();
   };
 
   const clearFilters = () => {
     setFilters({ page: 1, limit: 50 });
     setPage(1);
+    fetchLogs();
   };
 
   const formatDate = (dateString: string) => {
@@ -89,30 +99,32 @@ const LogViewerPage = () => {
 
                 {/* Filters */}
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-semibold mb-3">Bộ lọc</h3>
+                  <h3 className="font-semibold mb-3 text-base">Bộ lọc</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="action-filter">Hành động</Label>
+                      <Label htmlFor="action-filter" className="text-base">Hành động</Label>
                       <Input
                         id="action-filter"
                         placeholder="Ví dụ: CREATE_USER, LOGIN..."
                         value={filters.action || ""}
                         onChange={(e) => handleFilterChange("action", e.target.value || undefined)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                         className="h-10 text-base"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="entity-filter">Loại đối tượng</Label>
+                      <Label htmlFor="entity-filter" className="text-base">Loại đối tượng</Label>
                       <Input
                         id="entity-filter"
                         placeholder="Ví dụ: USER, BILL..."
                         value={filters.entityType || ""}
                         onChange={(e) => handleFilterChange("entityType", e.target.value || undefined)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                         className="h-10 text-base"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="user-filter">User ID</Label>
+                      <Label htmlFor="user-filter" className="text-base">User ID</Label>
                       <Input
                         id="user-filter"
                         type="number"
@@ -121,11 +133,12 @@ const LogViewerPage = () => {
                         onChange={(e) =>
                           handleFilterChange("userId", e.target.value ? parseInt(e.target.value) : undefined)
                         }
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                         className="h-10 text-base"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="start-date-filter">Từ ngày</Label>
+                      <Label htmlFor="start-date-filter" className="text-base">Từ ngày</Label>
                       <Input
                         id="start-date-filter"
                         type="datetime-local"
@@ -135,7 +148,7 @@ const LogViewerPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="end-date-filter">\u0110\u1ebfn ng\u00e0y</Label>
+                      <Label htmlFor="end-date-filter" className="text-base">Đến ngày</Label>
                       <Input
                         id="end-date-filter"
                         type="datetime-local"
@@ -144,11 +157,21 @@ const LogViewerPage = () => {
                         className="h-10 text-base"
                       />
                     </div>
-                    <div className="flex items-end">
-                      <Button variant="outline" onClick={clearFilters} className="w-full h-10 text-base">
-                        Xóa bộ lọc
-                      </Button>
-                    </div>
+                  </div>
+                  
+                  {/* Search and Clear Buttons */}
+                  <div className="flex gap-2 mt-4">
+                    <Button onClick={handleSearch} disabled={loading} className="h-10 text-base px-4">
+                      {loading ? 'Đang tìm...' : 'Tìm kiếm'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={clearFilters} 
+                      disabled={loading}
+                      className="h-10 text-base px-4"
+                    >
+                      Xóa bộ lọc
+                    </Button>
                   </div>
                 </div>
 

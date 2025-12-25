@@ -7,6 +7,7 @@ import { sequelize } from "../libs/db.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { createLog, LogActions, EntityTypes } from "../utils/logger.js";
 
 const ACCESS_TOKEN_TTL = "30m";
 const REFRESH_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000; // 14 ngày
@@ -52,7 +53,7 @@ export const signUp = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // tạo user
-        await User.create(
+        const newUser = await User.create(
             {
                 username: normalizedUsername,
                 email: normalizedEmail,
@@ -65,6 +66,10 @@ export const signUp = async (req, res) => {
         );
 
         await transaction.commit();
+
+        // Log signup activity
+        await createLog(newUser.userId, LogActions.SIGNUP, EntityTypes.USER, newUser.userId, 
+            { username: newUser.username, email: newUser.email }, req);
 
         return res.sendStatus(204);
     } catch (error) {
@@ -176,6 +181,10 @@ export const signIn = async (req, res) => {
             maxAge: REFRESH_TOKEN_TTL
         });
 
+        // Log login activity
+        await createLog(user.userId, LogActions.LOGIN, EntityTypes.USER, user.userId, 
+            { username: user.username, role: user.role }, req);
+
         // trả access token
         return res.status(200).json({
             success: true,
@@ -193,8 +202,17 @@ export const signIn = async (req, res) => {
 export const signOut = async (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
+        let userId = null;
 
         if (refreshToken) {
+            const session = await Session.findOne({
+                where: { refreshToken }
+            });
+            
+            if (session) {
+                userId = session.userId;
+            }
+
             await Session.destroy({
                 where: { refreshToken }
             });
@@ -204,6 +222,11 @@ export const signOut = async (req, res) => {
                 secure: false,
                 sameSite: "lax"
             });
+
+            // Log logout activity
+            if (userId) {
+                await createLog(userId, LogActions.LOGOUT, EntityTypes.SESSION, null, null, req);
+            }
         }
 
         return res.sendStatus(204);
@@ -215,7 +238,7 @@ export const signOut = async (req, res) => {
         });
     }
 };
-    // tạo access token mới từ refresh token
+// tạo access token mới từ refresh token
 export const refreshToken = async (req, res) => {
     try {
         //lấy refresh token từ cookie

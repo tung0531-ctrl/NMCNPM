@@ -43,6 +43,7 @@ import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { MoreVertical, Pencil, Trash2, Plus } from 'lucide-react';
 import { useSearchParams } from 'react-router';
+import { toast } from 'sonner';
 
 const ResidentManagementPage = () => {
     const navigate = useNavigate();
@@ -86,22 +87,42 @@ const ResidentManagementPage = () => {
             const response: ResidentResponse = await getAllResidentsForAdmin(filters);
             setResidents(response.residents);
             setPagination(response.pagination);
-        } catch (err) {
-            const error = err as { message: string };
+        } catch (err: any) {
+            const error = err as { response?: { status: number, data?: { message: string } }, message: string };
             console.error('Error fetching residents:', error);
+            
+            if (error.response?.status === 401) {
+                toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                navigate('/signin');
+            } else if (error.response?.status === 403) {
+                toast.error('Bạn không có quyền truy cập trang này. Chỉ admin mới có thể xem danh sách cư dân.');
+                navigate('/');
+            } else {
+                const errorMessage = error.response?.data?.message || error.message || 'Không thể tải danh sách cư dân. Vui lòng thử lại.';
+                toast.error(errorMessage);
+            }
         } finally {
             setLoading(false);
         }
-    }, [filters]);
+    }, [filters, navigate]);
 
     const fetchHouseholds = useCallback(async () => {
         try {
             const response = await getAllHouseholds();
             setHouseholds(response);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error fetching households:', err);
+            const error = err as { response?: { status: number, data?: { message: string } }, message: string };
+            
+            if (error.response?.status === 401) {
+                toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                navigate('/signin');
+            } else {
+                const errorMessage = error.response?.data?.message || error.message || 'Không thể tải danh sách hộ khẩu. Vui lòng thử lại.';
+                toast.error(errorMessage);
+            }
         }
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         fetchResidents();

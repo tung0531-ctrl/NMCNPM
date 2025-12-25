@@ -3,7 +3,7 @@ export interface User {
     username: string;
     email: string;
     fullName: string;
-    role: 'USER' | 'ADMIN';
+    role: 'RESIDENT' | 'ADMIN';  // Updated to match backend enum
     phone?: string;
     createdAt?: string;
     updatedAt?: string;

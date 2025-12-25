@@ -1,25 +1,8 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
-import Log from "../models/Log.js";
 import { sequelize } from "../libs/db.js";
 import { Op } from "sequelize";
-
-// Helper function to create log
-const createLog = async (userId, action, entityType, entityId, details, req) => {
-    try {
-        await Log.create({
-            userId,
-            action,
-            entityType,
-            entityId,
-            details: JSON.stringify(details),
-            ipAddress: req.ip || req.connection.remoteAddress,
-            userAgent: req.get('user-agent')
-        });
-    } catch (error) {
-        console.error("Lỗi tạo log:", error);
-    }
-};
+import { createLog, LogActions, EntityTypes } from "../utils/logger.js";
 
 export const authMe = async (req, res) => {
     try{
@@ -40,7 +23,7 @@ export const getAllUsers = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        await createLog(req.user.userId, 'VIEW_ALL_USERS', 'USER', null, { count: users.length }, req);
+        await createLog(req.user.userId, LogActions.VIEW_ALL_USERS, EntityTypes.USER, null, { count: users.length }, req);
 
         return res.status(200).json(users);
     } catch (error) {
@@ -61,7 +44,7 @@ export const getUserById = async (req, res) => {
             return res.status(404).json({ message: "Không tìm thấy người dùng." });
         }
 
-        await createLog(req.user.userId, 'VIEW_USER', 'USER', id, { username: user.username }, req);
+        await createLog(req.user.userId, LogActions.VIEW_USER, EntityTypes.USER, id, { username: user.username }, req);
 
         return res.status(200).json(user);
     } catch (error) {
@@ -109,8 +92,8 @@ export const createUser = async (req, res) => {
 
         await createLog(
             req.user.userId, 
-            'CREATE_USER', 
-            'USER', 
+            LogActions.CREATE_USER, 
+            EntityTypes.USER, 
             newUser.userId, 
             { username: newUser.username, role: newUser.role },
             req
@@ -170,8 +153,8 @@ export const updateUser = async (req, res) => {
 
         await createLog(
             req.user.userId,
-            'UPDATE_USER',
-            'USER',
+            LogActions.UPDATE_USER,
+            EntityTypes.USER,
             id,
             { updated_fields: Object.keys(updateData), username: user.username },
             req
@@ -211,8 +194,8 @@ export const deleteUser = async (req, res) => {
 
         await createLog(
             req.user.userId,
-            'DELETE_USER',
-            'USER',
+            LogActions.DELETE_USER,
+            EntityTypes.USER,
             id,
             { username },
             req

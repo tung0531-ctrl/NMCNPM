@@ -1,5 +1,6 @@
 import { Resident, Household } from '../models/index.js';
 import { Op } from 'sequelize';
+import { createLog, LogActions, EntityTypes } from '../utils/logger.js';
 
 // Get all residents with filtering for admin
 export const getAllResidentsForAdmin = async (req, res) => {
@@ -35,6 +36,10 @@ export const getAllResidentsForAdmin = async (req, res) => {
             offset,
             order: [['fullName', 'ASC']]
         });
+
+        // Log view all residents activity
+        await createLog(req.user.userId, LogActions.VIEW_ALL_RESIDENTS, EntityTypes.RESIDENT, null, 
+            { count: rows.length, filters: { fullName, householdId, isStaying } }, req);
 
         res.status(200).json({
             residents: rows,
@@ -101,6 +106,10 @@ export const createResident = async (req, res) => {
             isStaying
         });
 
+        // Log create resident activity
+        await createLog(req.user.userId, LogActions.CREATE_RESIDENT, EntityTypes.RESIDENT, resident.residentId, 
+            { fullName: resident.fullName, householdId }, req);
+
         res.status(201).json(resident);
     } catch (error) {
         console.error('Error creating resident:', error);
@@ -143,6 +152,10 @@ export const updateResident = async (req, res) => {
             isStaying
         });
 
+        // Log update resident activity
+        await createLog(req.user.userId, LogActions.UPDATE_RESIDENT, EntityTypes.RESIDENT, id, 
+            { fullName: resident.fullName, householdId }, req);
+
         res.status(200).json(resident);
     } catch (error) {
         console.error('Error updating resident:', error);
@@ -164,7 +177,12 @@ export const deleteResident = async (req, res) => {
             return res.status(404).json({ message: 'Resident not found' });
         }
 
+        const residentData = { fullName: resident.fullName, householdId: resident.householdId };
+
         await resident.destroy();
+
+        // Log delete resident activity
+        await createLog(req.user.userId, LogActions.DELETE_RESIDENT, EntityTypes.RESIDENT, id, residentData, req);
 
         res.status(200).json({ message: 'Resident deleted successfully' });
     } catch (error) {

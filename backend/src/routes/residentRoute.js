@@ -11,7 +11,8 @@ import { adminOnly } from '../middlewares/adminMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication and admin role
+// Apply adminOnly middleware to all routes (protectedRoute is applied at server level)
+router.use(adminOnly);
 
 // Get all residents with filtering
 router.get('/', getAllResidentsForAdmin);

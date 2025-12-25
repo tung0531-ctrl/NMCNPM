@@ -34,7 +34,7 @@ export const getLogs = async (req, res) => {
             where,
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [['createdAt', 'DESC']],
+            order: [['created_at', 'DESC']],
             include: [{
                 model: User,
                 as: 'user',

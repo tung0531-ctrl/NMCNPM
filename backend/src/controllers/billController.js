@@ -1,5 +1,6 @@
 import { Bill, Household, User } from '../models/index.js';
 import { Op, Sequelize } from 'sequelize';
+import { createLog, LogActions, EntityTypes } from '../utils/logger.js';
 
 // Helper function to calculate payment status based on amounts and billing period
 const calculatePaymentStatus = (totalAmount, paidAmount, billingPeriod) => {
@@ -173,6 +174,10 @@ export const getAllBills = async (req, res) => {
 
         console.log('Sending response...');
         
+        // Log view all bills activity
+        await createLog(req.user.userId, LogActions.VIEW_ALL_BILLS, EntityTypes.BILL, null, 
+            { count: finalBills.length, filters: { bill_id, householdName, paymentPeriod, status } }, req);
+        
         res.status(200).json({
             bills: finalBills,
             pagination: {
@@ -290,6 +295,10 @@ export const updateBill = async (req, res) => {
             billData.billingPeriod
         );
 
+        // Log update bill activity
+        await createLog(req.user.userId, LogActions.UPDATE_BILL, EntityTypes.BILL, id, 
+            { billId: id, householdName: billData.household_bill?.ownerName, title: billData.title }, req);
+
         res.status(200).json({
             billId: billData.billId,
             householdName: billData.household_bill?.ownerName || '',
@@ -384,6 +393,10 @@ export const createBill = async (req, res) => {
             billData.billingPeriod
         );
 
+        // Log create bill activity
+        await createLog(req.user.userId, LogActions.CREATE_BILL, EntityTypes.BILL, bill.billId, 
+            { householdName: billData.household_bill?.ownerName, title: billData.title, totalAmount: billData.totalAmount }, req);
+
         res.status(201).json({
             billId: billData.billId,
             householdName: billData.household_bill?.ownerName || '',
@@ -407,13 +420,28 @@ export const deleteBill = async (req, res) => {
 
         console.log(`Deleting bill ${id}`);
 
-        const bill = await Bill.findByPk(id);
+        const bill = await Bill.findByPk(id, {
+            include: [{
+                model: Household,
+                as: 'household_bill',
+                attributes: ['ownerName']
+            }]
+        });
 
         if (!bill) {
             return res.status(404).json({ message: 'Bill not found' });
         }
 
+        const billData = {
+            billId: bill.billId,
+            householdName: bill.household_bill?.ownerName,
+            title: bill.title
+        };
+
         await bill.destroy();
+
+        // Log delete bill activity
+        await createLog(req.user.userId, LogActions.DELETE_BILL, EntityTypes.BILL, id, billData, req);
 
         res.status(200).json({ message: 'Bill deleted successfully' });
     } catch (error) {
