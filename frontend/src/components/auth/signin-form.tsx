@@ -33,7 +33,8 @@ export function SigninForm({
           const {username, password} = data;
           try {
             await signIn (username, password);
-            navigate ('/');
+            // Sử dụng window.location để refresh toàn bộ trang
+            window.location.href = '/';
           } catch (error) {
             // Error already handled in store with toast
           }

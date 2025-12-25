@@ -9,21 +9,21 @@ INSERT INTO users (username, password_hash, full_name, email, role, status) VALU
 ('admin_hung', 'hash3', 'Phạm Tuấn Hùng', 'hung.bql@bluemoon.vn', 'ADMIN', 'ACTIVE'),
 ('admin_ngoc', 'hash4', 'Trần Bảo Ngọc', 'ngoc.bql@bluemoon.vn', 'ADMIN', 'ACTIVE'),
 ('admin_duc', 'hash5', 'Hoàng Minh Đức', 'duc.bql@bluemoon.vn', 'ADMIN', 'ACTIVE'),
-('user_hien', 'hash6', 'Trịnh Thu Hiền', 'hien.101@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_minh', 'hash7', 'Vũ Quang Minh', 'minh.102@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_tuan', 'hash8', 'Đỗ Anh Tuấn', 'tuan.103@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_linh', 'hash9', 'Phan Khánh Linh', 'linh.104@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_son', 'hash10', 'Lý Tùng Sơn', 'son.201@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_mai', 'hash11', 'Ngô Phương Mai', 'mai.202@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_duong', 'hash12', 'Bùi Thái Dương', 'duong.203@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_anh', 'hash13', 'Võ Hoàng Anh', 'anh.204@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_quynh', 'hash14', 'Đặng Diễm Quỳnh', 'quynh.301@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_nam', 'hash15', 'Lương Thành Nam', 'nam.302@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_trang', 'hash16', 'Hà Huyền Trang', 'trang.303@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_phuc', 'hash17', 'Đinh Hồng Phúc', 'phuc.304@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_tam', 'hash18', 'Mai Chí Tâm', 'tam.401@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_kien', 'hash19', 'Tô Trung Kiên', 'kien.402@gmail.com', 'CUDAN', 'ACTIVE'),
-('user_vy', 'hash20', 'Nguyễn Thảo Vy', 'vy.403@gmail.com', 'CUDAN', 'ACTIVE');
+('user_hien', 'hash6', 'Trịnh Thu Hiền', 'hien.101@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_minh', 'hash7', 'Vũ Quang Minh', 'minh.102@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_tuan', 'hash8', 'Đỗ Anh Tuấn', 'tuan.103@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_linh', 'hash9', 'Phan Khánh Linh', 'linh.104@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_son', 'hash10', 'Lý Tùng Sơn', 'son.201@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_mai', 'hash11', 'Ngô Phương Mai', 'mai.202@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_duong', 'hash12', 'Bùi Thái Dương', 'duong.203@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_anh', 'hash13', 'Võ Hoàng Anh', 'anh.204@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_quynh', 'hash14', 'Đặng Diễm Quỳnh', 'quynh.301@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_nam', 'hash15', 'Lương Thành Nam', 'nam.302@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_trang', 'hash16', 'Hà Huyền Trang', 'trang.303@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_phuc', 'hash17', 'Đinh Hồng Phúc', 'phuc.304@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_tam', 'hash18', 'Mai Chí Tâm', 'tam.401@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_kien', 'hash19', 'Tô Trung Kiên', 'kien.402@gmail.com', 'RESIDENT', 'ACTIVE'),
+('user_vy', 'hash20', 'Nguyễn Thảo Vy', 'vy.403@gmail.com', 'RESIDENT', 'ACTIVE');
 -- =============================================
 -- 2. INSERT DATA: HOUSEHOLDS
 -- =============================================
@@ -112,27 +112,27 @@ INSERT INTO bills (household_id, billing_period, title, total_amount, paid_amoun
 (20, '2025-12-01', 'Tiền quản lý tháng 12', 525000, 525000, 'PAID', 1, 1, 1);
 
 -- =============================================
--- 6. INSERT DATA: AUDIT LOGS
--- (Nhật ký hoạt động của Admin)
+-- 7. INSERT DATA: LOGS
+-- (Nhật ký hoạt động chi tiết của hệ thống)
 -- =============================================
-INSERT INTO audit_logs (user_id, action, target_table, record_id, old_value, new_value, ip_address) VALUES
-(1, 'UPDATE_FEE', 'fee_types', 1, '6500', '7000', '192.168.1.10'),
-(1, 'INSERT_BILL', 'bills', 1, NULL, 'Created bill for HH 1', '192.168.1.10'),
-(2, 'COLLECT_MONEY', 'bills', 1, 'UNPAID', 'PAID', '192.168.1.11'),
-(1, 'INSERT_RESIDENT', 'residents', 3, NULL, 'Added child resident', '192.168.1.10'),
-(3, 'COLLECT_MONEY', 'bills', 5, 'UNPAID', 'PARTIAL', '192.168.1.15'),
-(2, 'COLLECT_MONEY', 'bills', 2, 'UNPAID', 'PAID', '192.168.1.11'),
-(1, 'UPDATE_USER', 'users', 20, 'ACTIVE', 'LOCKED', '192.168.1.10'),
-(1, 'UPDATE_USER', 'users', 20, 'LOCKED', 'ACTIVE', '192.168.1.10'),
-(4, 'COLLECT_MONEY', 'bills', 9, 'UNPAID', 'PAID', '192.168.1.18'),
-(2, 'COLLECT_MONEY', 'bills', 12, 'UNPAID', 'PAID', '192.168.1.11'),
-(5, 'COLLECT_MONEY', 'bills', 15, 'UNPAID', 'PAID', '192.168.1.20'),
-(1, 'INSERT_BILL', 'bills', 20, NULL, 'Created bill for HH 20', '192.168.1.10'),
-(1, 'UPDATE_HOUSEHOLD', 'households', 4, '110.0', '110.2', '192.168.1.10'),
-(2, 'COLLECT_MONEY', 'bills', 19, 'UNPAID', 'PAID', '192.168.1.11'),
-(3, 'COLLECT_MONEY', 'bills', 17, 'UNPAID', 'PAID', '192.168.1.15'),
-(1, 'DELETE_RESIDENT', 'residents', 18, 'Old Resident Data', NULL, '192.168.1.10'),
-(4, 'UPDATE_FEE', 'fee_types', 4, '1100000', '1200000', '192.168.1.18'),
-(1, 'INSERT_HOUSEHOLD', 'households', 21, NULL, 'New Room 602', '192.168.1.10'),
-(5, 'COLLECT_MONEY', 'bills', 8, 'UNPAID', 'PAID', '192.168.1.20'),
-(1, 'UPDATE_SYSTEM', 'settings', 0, 'v1.0', 'v1.1', '127.0.0.1');
+INSERT INTO logs (user_id, action, entity_type, entity_id, details, ip_address, user_agent) VALUES
+(1, 'CREATE', 'User', 6, '{"username":"user_hien","role":"RESIDENT"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'CREATE', 'User', 7, '{"username":"user_minh","role":"RESIDENT"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'UPDATE', 'User', 20, '{"oldStatus":"ACTIVE","newStatus":"LOCKED"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'UPDATE', 'User', 20, '{"oldStatus":"LOCKED","newStatus":"ACTIVE"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(2, 'CREATE', 'Household', 1, '{"householdCode":"BM_101","ownerName":"Trịnh Thu Hiền"}', '192.168.1.11', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'),
+(2, 'CREATE', 'Resident', 1, '{"fullName":"Trịnh Thu Hiền","householdId":1}', '192.168.1.11', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'),
+(1, 'UPDATE', 'Household', 4, '{"oldArea":"110.0","newArea":"110.2"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(3, 'CREATE', 'Bill', 1, '{"householdId":1,"title":"Tiền quản lý tháng 12"}', '192.168.1.15', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'UPDATE', 'Bill', 1, '{"oldStatus":"UNPAID","newStatus":"PAID"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(2, 'UPDATE', 'Bill', 2, '{"oldStatus":"UNPAID","newStatus":"PAID"}', '192.168.1.11', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'),
+(3, 'UPDATE', 'Bill', 5, '{"oldStatus":"UNPAID","newStatus":"PARTIAL"}', '192.168.1.15', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(4, 'CREATE', 'FeeType', 6, '{"feeName":"Phí bảo trì","unitPrice":50000}', '192.168.1.18', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'UPDATE', 'FeeType', 1, '{"oldPrice":"6500","newPrice":"7000"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(5, 'DELETE', 'Resident', 25, '{"fullName":"Nguyễn Văn Test","reason":"Di chuyển"}', '192.168.1.20', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'LOGIN', 'Session', NULL, '{"success":true}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(2, 'LOGIN', 'Session', NULL, '{"success":true}', '192.168.1.11', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'),
+(6, 'LOGIN', 'Session', NULL, '{"success":true}', '192.168.1.100', 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0)'),
+(1, 'LOGOUT', 'Session', NULL, '{}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(1, 'CREATE', 'Household', 21, '{"householdCode":"BM_602","ownerName":"Trần Văn F"}', '192.168.1.10', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'),
+(4, 'UPDATE', 'FeeType', 4, '{"oldPrice":"1100000","newPrice":"1200000"}', '192.168.1.18', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)');

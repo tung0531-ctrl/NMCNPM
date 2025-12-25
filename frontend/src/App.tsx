@@ -13,6 +13,7 @@ import LogViewerPage from './pages/LogViewerPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
+import GuestRoute from './components/auth/GuestRoute';
 
 function App() {
   return <>
@@ -22,11 +23,19 @@ function App() {
   {/* public routes*/}
     <Route
       path = '/signin'
-      element = {<SignInPage/>}
+      element = {
+        <GuestRoute>
+          <SignInPage/>
+        </GuestRoute>
+      }
       />
        <Route
       path = '/signup'
-      element = {<SignUpPage/>}
+      element = {
+        <GuestRoute>
+          <SignUpPage/>
+        </GuestRoute>
+      }
       />
   {/* protect routes*/}
   {/* todo: tạo protected route */}

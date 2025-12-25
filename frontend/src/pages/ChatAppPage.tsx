@@ -90,6 +90,32 @@ const handleOnClick = async () => {
               </div>
             )}
 
+            {isAdmin && (
+              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">Quản Lý Người Dùng</h2>
+                <p className="text-base text-muted-foreground mb-4">Thêm, sửa, xóa người dùng hệ thống</p>
+                <Button 
+                  onClick={() => navigate('/users')} 
+                  className="w-full h-10 text-base"
+                >
+                  Truy cập Quản Lý Người Dùng
+                </Button>
+              </div>
+            )}
+
+            {isAdmin && (
+              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">Xem Log Hoạt Động</h2>
+                <p className="text-base text-muted-foreground mb-4">Xem lịch sử hoạt động hệ thống</p>
+                <Button 
+                  onClick={() => navigate('/logs')} 
+                  className="w-full h-10 text-base"
+                >
+                  Truy cập Xem Log
+                </Button>
+              </div>
+            )}
+
             <div className="border border-border rounded-lg p-8 hover:shadow-lg transition-shadow">
               <h2 className="text-xl font-semibold mb-2">Test API</h2>
               <p className="text-base text-muted-foreground mb-4">Kiểm tra kết nối API</p>

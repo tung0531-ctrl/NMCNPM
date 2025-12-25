@@ -8,9 +8,12 @@ const Logout = () => {
     const handleLogout = async () =>{
         try {
             await signOut();
-            navigate("/signin");
+            // Sử dụng window.location để refresh toàn bộ trang
+            window.location.href = "/signin";
         } catch (error){
             console.error(error);
+            // Vẫn redirect ngay cả khi có lỗi
+            window.location.href = "/signin";
         }
     }
 

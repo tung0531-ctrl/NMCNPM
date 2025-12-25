@@ -58,6 +58,8 @@ export const signUp = async (req, res) => {
                 email: normalizedEmail,
                 fullName: `${firstName} ${lastName}`,
                 passwordHash: hashedPassword,
+                role: 'RESIDENT',
+                status: 'ACTIVE',
             },
             { transaction }
         );
@@ -130,6 +132,14 @@ export const signIn = async (req, res) => {
             return res.status(401).json({
                 success: false,
                 message: "Tên đăng nhập hoặc mật khẩu không đúng."
+            });
+        }
+
+        // kiểm tra trạng thái tài khoản
+        if (user.status === 'LOCKED') {
+            return res.status(403).json({
+                success: false,
+                message: "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên."
             });
         }
 

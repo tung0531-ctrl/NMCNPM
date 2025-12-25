@@ -3,9 +3,10 @@ import { userService } from "../services/userService";
 import type { User, CreateUserData, UpdateUserData } from "../services/userService";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { useNavigate } from "react-router";
 import {
   Dialog,
   DialogContent,
@@ -26,9 +27,23 @@ import {
 } from "../components/ui/alert-dialog";
 
 const UserManagementPage = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10
+  });
+  const [userStats, setUserStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    lockedUsers: 0,
+    adminUsers: 0,
+    residentUsers: 0
+  });
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -47,11 +62,57 @@ const UserManagementPage = () => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const handlePageChange = (newPage: number) => {
+    fetchUsers(newPage, pagination.itemsPerPage, searchTerm);
+  };
+
+  const handleSearch = () => {
+    fetchUsers(1, pagination.itemsPerPage, searchTerm);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    fetchUsers(1, pagination.itemsPerPage, "");
+  };
+
+  const fetchUsers = async (page = 1, limit = 10, search = "") => {
     setLoading(true);
     try {
       const data = await userService.getAllUsers();
-      setUsers(data);
+      
+      // Filter users based on search term
+      const filteredUsers = data.filter((user: User) => {
+        const searchLower = search.toLowerCase();
+        return (
+          user.username.toLowerCase().includes(searchLower) ||
+          user.email.toLowerCase().includes(searchLower) ||
+          user.fullName.toLowerCase().includes(searchLower)
+        );
+      });
+
+      // Calculate pagination
+      const totalItems = filteredUsers.length;
+      const totalPages = Math.ceil(totalItems / limit);
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+      setUsers(paginatedUsers);
+      setPagination({
+        currentPage: page,
+        totalPages,
+        totalItems,
+        itemsPerPage: limit
+      });
+
+      // Calculate statistics
+      setUserStats({
+        totalUsers: data.length,
+        activeUsers: data.filter((u: User) => u.status === 'ACTIVE').length,
+        lockedUsers: data.filter((u: User) => u.status === 'LOCKED').length,
+        adminUsers: data.filter((u: User) => u.role === 'ADMIN').length,
+        residentUsers: data.filter((u: User) => u.role === 'RESIDENT').length
+      });
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Lỗi khi tải danh sách người dùng");
@@ -66,7 +127,7 @@ const UserManagementPage = () => {
       toast.success("Tạo người dùng thành công");
       setIsCreateDialogOpen(false);
       resetForm();
-      fetchUsers();
+      await fetchUsers(pagination.currentPage, pagination.itemsPerPage, searchTerm);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Lỗi khi tạo người dùng");
@@ -89,7 +150,7 @@ const UserManagementPage = () => {
       toast.success("Cập nhật người dùng thành công");
       setIsEditDialogOpen(false);
       resetForm();
-      fetchUsers();
+      await fetchUsers(pagination.currentPage, pagination.itemsPerPage, searchTerm);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Lỗi khi cập nhật người dùng");
@@ -104,7 +165,7 @@ const UserManagementPage = () => {
       toast.success("Xóa người dùng thành công");
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
-      fetchUsers();
+      await fetchUsers(pagination.currentPage, pagination.itemsPerPage, searchTerm);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Lỗi khi xóa người dùng");
@@ -141,132 +202,336 @@ const UserManagementPage = () => {
     setSelectedUser(null);
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="container mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Quản lý người dùng</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-4 gap-4">
-            <Input
-              placeholder="Tìm kiếm người dùng..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
-            />
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              Thêm người dùng mới
-            </Button>
-          </div>
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 -z-10 bg-gradient-purple" />
+      <div className="min-h-screen p-6 md:p-10">
+        <div className="max-w-7xl mx-auto">
+          <Card className="border-border">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col gap-6">
+                {/* Header */}
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col gap-2">
+                    <h1 className="text-3xl font-bold">Quản lý người dùng</h1>
+                    <p className="text-base text-muted-foreground">
+                      Quản lý thông tin các người dùng trong hệ thống
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setIsCreateDialogOpen(true)}
+                      className="h-10 text-base px-4"
+                    >
+                      Tạo người dùng mới
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/')}
+                      className="h-10 text-base px-4"
+                    >
+                      ← Về trang chủ
+                    </Button>
+                  </div>
+                </div>
 
-          {loading ? (
-            <div className="text-center py-8">Đang tải...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border p-2 text-left">ID</th>
-                    <th className="border p-2 text-left">Tên đăng nhập</th>
-                    <th className="border p-2 text-left">Email</th>
-                    <th className="border p-2 text-left">Họ tên</th>
-                    <th className="border p-2 text-left">Vai trò</th>
-                    <th className="border p-2 text-left">Trạng thái</th>
-                    <th className="border p-2 text-center">Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.userId} className="hover:bg-gray-50">
-                      <td className="border p-2">{user.userId}</td>
-                      <td className="border p-2">{user.username}</td>
-                      <td className="border p-2">{user.email}</td>
-                      <td className="border p-2">{user.fullName}</td>
-                      <td className="border p-2">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            user.role === "ADMIN"
-                              ? "bg-purple-200 text-purple-800"
-                              : "bg-blue-200 text-blue-800"
-                          }`}
+                {/* Search */}
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Label htmlFor="search" className="text-base">Tìm kiếm</Label>
+                    <Input
+                      id="search"
+                      placeholder="Tìm theo tên đăng nhập, email hoặc họ tên..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="h-10 text-base"
+                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                  </div>
+                  <Button onClick={handleSearch} disabled={loading} className="h-10 text-base px-4">
+                    {loading ? 'Đang tìm...' : 'Tìm kiếm'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={clearSearch}
+                    disabled={loading}
+                    className="h-10 text-base px-4"
+                  >
+                    Xóa tìm kiếm
+                  </Button>
+                </div>
+
+                {/* Users List */}
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-base font-semibold">ID</th>
+                          <th className="px-4 py-3 text-left text-base font-semibold">Tên đăng nhập</th>
+                          <th className="px-4 py-3 text-left text-base font-semibold">Email</th>
+                          <th className="px-4 py-3 text-left text-base font-semibold">Họ tên</th>
+                          <th className="px-4 py-3 text-left text-base font-semibold">Vai trò</th>
+                          <th className="px-4 py-3 text-left text-base font-semibold">Trạng thái</th>
+                          <th className="px-4 py-3 text-center text-base font-semibold">Hành động</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {loading ? (
+                          <tr>
+                            <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                              Đang tải...
+                            </td>
+                          </tr>
+                        ) : users.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                              Không tìm thấy người dùng nào
+                            </td>
+                          </tr>
+                        ) : (
+                          users.map((user) => (
+                            <tr key={user.userId} className="hover:bg-muted/50 transition-colors">
+                              <td className="px-4 py-3 text-base">{user.userId}</td>
+                              <td className="px-4 py-3 text-base font-medium">{user.username}</td>
+                              <td className="px-4 py-3 text-base">{user.email}</td>
+                              <td className="px-4 py-3 text-base">{user.fullName}</td>
+                              <td className="px-4 py-3 text-base">
+                                <span
+                                  className={`px-2 py-1 rounded text-xs font-semibold ${
+                                    user.role === "ADMIN"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : "bg-blue-100 text-blue-800"
+                                  }`}
+                                >
+                                  {user.role}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-base">
+                                <span
+                                  className={`px-2 py-1 rounded text-xs font-semibold ${
+                                    user.status === "ACTIVE"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {user.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <div className="flex gap-2 justify-center">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openEditDialog(user)}
+                                    className="h-9 text-base"
+                                  >
+                                    Sửa
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => openDeleteDialog(user)}
+                                    className="h-9 text-base"
+                                  >
+                                    Xóa
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex justify-between items-center flex-wrap gap-4">
+                    <div className="text-base text-muted-foreground">
+                      Hiển thị {users.length} trong tổng số {pagination.totalItems} người dùng
+                    </div>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(1)}
+                          disabled={pagination.currentPage === 1 || loading}
+                          title="Trang đầu"
                         >
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="border p-2">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            user.status === "ACTIVE"
-                              ? "bg-green-200 text-green-800"
-                              : "bg-red-200 text-red-800"
-                          }`}
+                          ««
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(pagination.currentPage - 1)}
+                          disabled={pagination.currentPage === 1 || loading}
                         >
-                          {user.status}
-                        </span>
-                      </td>
-                      <td className="border p-2 text-center">
-                        <div className="flex gap-2 justify-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openEditDialog(user)}
-                          >
-                            Sửa
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => openDeleteDialog(user)}
-                          >
-                            Xóa
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredUsers.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="border p-4 text-center text-gray-500">
-                        Không tìm thấy người dùng nào
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                          ‹ Trước
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                          {(() => {
+                            const current = pagination.currentPage;
+                            const total = pagination.totalPages;
+                            const pages = [];
+                            
+                            if (total <= 7) {
+                              for (let i = 1; i <= total; i++) {
+                                pages.push(i);
+                              }
+                            } else {
+                              pages.push(1);
+                              
+                              if (current > 3) {
+                                pages.push('...');
+                              }
+                              
+                              const start = Math.max(2, current - 1);
+                              const end = Math.min(total - 1, current + 1);
+                              
+                              for (let i = start; i <= end; i++) {
+                                if (!pages.includes(i)) {
+                                  pages.push(i);
+                                }
+                              }
+                              
+                              if (current < total - 2) {
+                                pages.push('...');
+                              }
+                              
+                              if (!pages.includes(total)) {
+                                pages.push(total);
+                              }
+                            }
+                            
+                            return pages.map((page, idx) => 
+                              typeof page === 'number' ? (
+                                <Button
+                                  key={page}
+                                  variant={page === current ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => handlePageChange(page)}
+                                  disabled={loading}
+                                  className="min-w-[40px]"
+                                >
+                                  {page}
+                                </Button>
+                              ) : (
+                                <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                                  {page}
+                                </span>
+                              )
+                            );
+                        })()}
+                      </div>
+                      
+                      <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(pagination.currentPage + 1)}
+                          disabled={pagination.currentPage === pagination.totalPages || loading}
+                        >
+                          Sau ›
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(pagination.totalPages)}
+                          disabled={pagination.currentPage === pagination.totalPages || loading}
+                          title="Trang cuối"
+                        >
+                          »»
+                      </Button>
+                      
+                      <div className="flex items-center gap-2 ml-2">
+                          <span className="text-base text-muted-foreground">Đến trang:</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max={pagination.totalPages}
+                            placeholder={pagination.currentPage.toString()}
+                            className="w-20 px-3 py-2 text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                const value = parseInt((e.target as HTMLInputElement).value);
+                                if (value >= 1 && value <= pagination.totalPages) {
+                                  handlePageChange(value);
+                                  (e.target as HTMLInputElement).value = '';
+                                }
+                              }
+                            }}
+                            disabled={loading}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Statistics */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <p className="text-base text-muted-foreground">Tổng số tài khoản</p>
+                        <p className="text-2xl font-bold">{userStats.totalUsers}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <p className="text-base text-muted-foreground">Đang hoạt động</p>
+                        <p className="text-2xl font-bold text-green-600">{userStats.activeUsers}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <p className="text-base text-muted-foreground">Bị khóa</p>
+                        <p className="text-2xl font-bold text-red-600">{userStats.lockedUsers}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <p className="text-base text-muted-foreground">Quản trị viên</p>
+                        <p className="text-2xl font-bold text-purple-600">{userStats.adminUsers}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-border">
+                      <CardContent className="p-4">
+                        <p className="text-base text-muted-foreground">Cư dân</p>
+                        <p className="text-2xl font-bold text-blue-600">{userStats.residentUsers}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
-            <DialogTitle>Thêm người dùng mới</DialogTitle>
+            <DialogTitle>Tạo người dùng mới</DialogTitle>
             <DialogDescription>
-              Nhập thông tin người dùng mới
+              Nhập thông tin để tạo người dùng mới
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="create-username">Tên đăng nhập</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="create-username" className="text-base">Tên đăng nhập</Label>
               <Input
                 id="create-username"
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
+                placeholder="Nhập tên đăng nhập..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="create-email">Email</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="create-email" className="text-base">Email</Label>
               <Input
                 id="create-email"
                 type="email"
@@ -274,20 +539,24 @@ const UserManagementPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
+                placeholder="Nhập email..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="create-fullname">Họ tên</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="create-fullname" className="text-base">Họ tên</Label>
               <Input
                 id="create-fullname"
                 value={formData.fullName}
                 onChange={(e) =>
                   setFormData({ ...formData, fullName: e.target.value })
                 }
+                placeholder="Nhập họ tên..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="create-password">Mật khẩu</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="create-password" className="text-base">Mật khẩu</Label>
               <Input
                 id="create-password"
                 type="password"
@@ -295,13 +564,15 @@ const UserManagementPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                placeholder="Nhập mật khẩu..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="create-role">Vai trò</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="create-role" className="text-base">Vai trò</Label>
               <select
                 id="create-role"
-                className="w-full border rounded p-2"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value as "ADMIN" | "RESIDENT" })
@@ -311,11 +582,11 @@ const UserManagementPage = () => {
                 <option value="ADMIN">ADMIN</option>
               </select>
             </div>
-            <div>
-              <Label htmlFor="create-status">Trạng thái</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="create-status" className="text-base">Trạng thái</Label>
               <select
                 id="create-status"
-                className="w-full border rounded p-2"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as "ACTIVE" | "LOCKED" })
@@ -327,39 +598,45 @@ const UserManagementPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsCreateDialogOpen(false);
-              resetForm();
-            }}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsCreateDialogOpen(false);
+                resetForm();
+              }}
+              className="h-10 text-base px-4"
+            >
               Hủy
             </Button>
-            <Button onClick={handleCreateUser}>Tạo</Button>
+            <Button onClick={handleCreateUser} className="h-10 text-base px-4">Tạo mới</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
-            <DialogTitle>Sửa thông tin người dùng</DialogTitle>
+            <DialogTitle>Chỉnh sửa thông tin người dùng</DialogTitle>
             <DialogDescription>
               Cập nhật thông tin người dùng
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-username">Tên đăng nhập</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-username" className="text-base">Tên đăng nhập</Label>
               <Input
                 id="edit-username"
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
+                placeholder="Nhập tên đăng nhập..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="edit-email">Email</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-email" className="text-base">Email</Label>
               <Input
                 id="edit-email"
                 type="email"
@@ -367,20 +644,24 @@ const UserManagementPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
+                placeholder="Nhập email..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="edit-fullname">Họ tên</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-fullname" className="text-base">Họ tên</Label>
               <Input
                 id="edit-fullname"
                 value={formData.fullName}
                 onChange={(e) =>
                   setFormData({ ...formData, fullName: e.target.value })
                 }
+                placeholder="Nhập họ tên..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="edit-password">Mật khẩu mới (để trống nếu không đổi)</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-password" className="text-base">Mật khẩu mới (để trống nếu không đổi)</Label>
               <Input
                 id="edit-password"
                 type="password"
@@ -388,13 +669,15 @@ const UserManagementPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                placeholder="Nhập mật khẩu mới..."
+                className="h-10 text-base"
               />
             </div>
-            <div>
-              <Label htmlFor="edit-role">Vai trò</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-role" className="text-base">Vai trò</Label>
               <select
                 id="edit-role"
-                className="w-full border rounded p-2"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value as "ADMIN" | "RESIDENT" })
@@ -404,11 +687,11 @@ const UserManagementPage = () => {
                 <option value="ADMIN">ADMIN</option>
               </select>
             </div>
-            <div>
-              <Label htmlFor="edit-status">Trạng thái</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status" className="text-base">Trạng thái</Label>
               <select
                 id="edit-status"
-                className="w-full border rounded p-2"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as "ACTIVE" | "LOCKED" })
@@ -420,13 +703,17 @@ const UserManagementPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsEditDialogOpen(false);
-              resetForm();
-            }}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsEditDialogOpen(false);
+                resetForm();
+              }}
+              className="h-10 text-base px-4"
+            >
               Hủy
             </Button>
-            <Button onClick={handleUpdateUser}>Cập nhật</Button>
+            <Button onClick={handleUpdateUser} className="h-10 text-base px-4">Cập nhật</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

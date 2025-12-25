@@ -34,10 +34,15 @@ export function SignupForm({
     const onSubmit = async (data: SignUpFormValues) =>{
       const {firstname, lastname, username, email, password} = data;
 
-      //gọi backend để signup
-      await signUp (username, password, email, firstname, lastname);
-
-      navigate("/signin");
+      try {
+        //gọi backend để signup
+        await signUp (username, password, email, firstname, lastname);
+        // Chỉ navigate khi thành công
+        navigate("/signin");
+      } catch (error) {
+        // Error already handled in store with toast
+        console.error('Signup error:', error);
+      }
     }
 
   return (

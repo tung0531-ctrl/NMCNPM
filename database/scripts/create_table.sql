@@ -14,26 +14,24 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100),
-    -- Chỉ giữ lại ADMIN (BQL) và CUDAN
-    role ENUM('ADMIN', 'CUDAN') NOT NULL DEFAULT 'CUDAN',
+    -- Chỉ giữ lại ADMIN (BQL) và RESIDENT (Cư dân)
+    role ENUM('ADMIN', 'RESIDENT') NOT NULL DEFAULT 'RESIDENT',
     status ENUM('ACTIVE', 'LOCKED') DEFAULT 'ACTIVE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Bảng nhật ký hệ thống (Audit Log)
--- Ghi lại hoạt động của BQL (thay vì Kế toán) khi chỉnh sửa dữ liệu nhạy cảm
-CREATE TABLE audit_logs (
-    log_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT, -- Người thực hiện (thường là Admin/BQL)
-    action VARCHAR(50) NOT NULL, 
-    target_table VARCHAR(50), 
-    record_id INT, 
-    old_value TEXT, 
-    new_value TEXT, 
-    ip_address VARCHAR(45),
+-- Bảng Sessions (Quản lý phiên đăng nhập)
+CREATE TABLE sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    refresh_token VARCHAR(255) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_sessions_user_id (user_id),
+    INDEX idx_sessions_refresh_token (refresh_token),
+    INDEX idx_sessions_expires_at (expires_at)
 );
 
 -- =============================================
@@ -157,3 +155,23 @@ CREATE INDEX idx_resident_search ON residents(full_name, identity_card_number);
 CREATE INDEX idx_bills_household_id ON bills(household_id);
 CREATE INDEX idx_bills_fee_status ON bills(fee_type_id, payment_status);
 CREATE INDEX idx_bills_period_status ON bills(billing_period, payment_status);
+
+-- =============================================
+-- 6. BẢNG LOGS (Nhật ký hoạt động chi tiết)
+-- =============================================
+CREATE TABLE logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    action VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50) NULL,
+    entity_id INT NULL,
+    details TEXT NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_logs_user_id (user_id),
+    INDEX idx_logs_action (action),
+    INDEX idx_logs_entity_type (entity_type),
+    INDEX idx_logs_created_at (created_at)
+);

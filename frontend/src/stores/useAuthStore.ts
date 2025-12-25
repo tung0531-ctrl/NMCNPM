@@ -24,9 +24,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             //gọi api
             await authService.signUp(username, password, email, firstName, lastName);
             toast.success('Đăng ký thành công! Bạn sẽ được chuyển sang trang đăng nhập');
-        } catch (error){
+        } catch (error: any){
             console.error(error);
-            toast.error('Đăng ký không thành công');
+            const errorMessage = error.response?.data?.message || 'Đăng ký không thành công';
+            toast.error(errorMessage);
+            throw error; // Throw để component có thể handle navigation
+        } finally {
+            set({loading: false});
         }
     },
 
@@ -45,6 +49,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             console.error(error);
             if (error.response?.status === 401) {
                 toast.error('Tên đăng nhập hoặc mật khẩu không đúng');
+            } else if (error.response?.status === 403) {
+                // Hiển thị message từ server khi tài khoản bị khóa
+                toast.error(error.response?.data?.message || 'Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên.');
             } else {
                 toast.error('Đăng nhập không thành công');
             }
@@ -58,13 +65,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     
     signOut: async () => {
         try {
-            get ().clearState();
-            await authService.signOut()
-            toast.success ("Đăng xuất thành công")
+            await authService.signOut();
+            get().clearState();
+            toast.success("Đăng xuất thành công");
         } catch (error){
             console.error(error);
+            // Vẫn clear state ngay cả khi có lỗi từ server
+            get().clearState();
             toast.error("Lỗi xảy ra khi logout. Hãy thử lại");
-
         }
     },
 

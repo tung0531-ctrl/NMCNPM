@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Button } from "../components/ui/button";
-
+import { Button } from "../components/ui/button";import { useNavigate } from "react-router";
 const LogViewerPage = () => {
+  const navigate = useNavigate();
   const [logs, setLogs] = useState<Log[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -63,168 +63,295 @@ const LogViewerPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Xem log hoạt động</CardTitle>
-          <p className="text-sm text-gray-500">Tổng số: {total} log</p>
-        </CardHeader>
-        <CardContent>
-          {/* Filters */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold mb-3">Bộ lọc</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="action-filter">Hành động</Label>
-                <Input
-                  id="action-filter"
-                  placeholder="Ví dụ: CREATE_USER, LOGIN..."
-                  value={filters.action || ""}
-                  onChange={(e) => handleFilterChange("action", e.target.value || undefined)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="entity-filter">Loại đối tượng</Label>
-                <Input
-                  id="entity-filter"
-                  placeholder="Ví dụ: USER, BILL..."
-                  value={filters.entityType || ""}
-                  onChange={(e) => handleFilterChange("entityType", e.target.value || undefined)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="user-filter">User ID</Label>
-                <Input
-                  id="user-filter"
-                  type="number"
-                  placeholder="Nhập User ID"
-                  value={filters.userId || ""}
-                  onChange={(e) =>
-                    handleFilterChange("userId", e.target.value ? parseInt(e.target.value) : undefined)
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="start-date-filter">Từ ngày</Label>
-                <Input
-                  id="start-date-filter"
-                  type="datetime-local"
-                  value={filters.startDate || ""}
-                  onChange={(e) => handleFilterChange("startDate", e.target.value || undefined)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="end-date-filter">Đến ngày</Label>
-                <Input
-                  id="end-date-filter"
-                  type="datetime-local"
-                  value={filters.endDate || ""}
-                  onChange={(e) => handleFilterChange("endDate", e.target.value || undefined)}
-                />
-              </div>
-              <div className="flex items-end">
-                <Button variant="outline" onClick={clearFilters} className="w-full">
-                  Xóa bộ lọc
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Logs Table */}
-          {loading ? (
-            <div className="text-center py-8">Đang tải...</div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border p-2 text-left">ID</th>
-                      <th className="border p-2 text-left">Thời gian</th>
-                      <th className="border p-2 text-left">Người dùng</th>
-                      <th className="border p-2 text-left">Hành động</th>
-                      <th className="border p-2 text-left">Loại đối tượng</th>
-                      <th className="border p-2 text-left">ID đối tượng</th>
-                      <th className="border p-2 text-left">Chi tiết</th>
-                      <th className="border p-2 text-left">IP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {logs.map((log) => (
-                      <tr key={log.logId} className="hover:bg-gray-50">
-                        <td className="border p-2">{log.logId}</td>
-                        <td className="border p-2 whitespace-nowrap">
-                          {formatDate(log.createdAt)}
-                        </td>
-                        <td className="border p-2">
-                          {log.user ? (
-                            <div>
-                              <div className="font-medium">{log.user.username}</div>
-                              <div className="text-xs text-gray-500">{log.user.fullName}</div>
-                              <div className="text-xs text-gray-400">
-                                {log.user.role}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">Hệ thống</span>
-                          )}
-                        </td>
-                        <td className="border p-2">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                            {log.action}
-                          </span>
-                        </td>
-                        <td className="border p-2">{log.entityType || "-"}</td>
-                        <td className="border p-2">{log.entityId || "-"}</td>
-                        <td className="border p-2">
-                          {log.details ? (
-                            <pre className="text-xs max-w-xs overflow-auto">
-                              {JSON.stringify(parseDetails(log.details), null, 2)}
-                            </pre>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                        <td className="border p-2 text-xs">{log.ipAddress || "-"}</td>
-                      </tr>
-                    ))}
-                    {logs.length === 0 && (
-                      <tr>
-                        <td colSpan={8} className="border p-4 text-center text-gray-500">
-                          Không có log nào
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-4">
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 -z-10 bg-gradient-purple" />
+      <div className="min-h-screen p-6 md:p-10">
+        <div className="max-w-7xl mx-auto">
+          <Card className="border-border">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col gap-6">
+                {/* Header */}
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col gap-2">
+                    <h1 className="text-3xl font-bold">Xem log hoạt động</h1>
+                    <p className="text-base text-muted-foreground">
+                      Tổng số: {total} log
+                    </p>
+                  </div>
                   <Button
                     variant="outline"
-                    onClick={() => setPage(Math.max(1, page - 1))}
-                    disabled={page === 1}
+                    onClick={() => navigate('/')}
+                    className="h-10 text-base px-4"
                   >
-                    Trang trước
-                  </Button>
-                  <span className="text-sm">
-                    Trang {page} / {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(Math.min(totalPages, page + 1))}
-                    disabled={page === totalPages}
-                  >
-                    Trang sau
+                    ← Về trang chủ
                   </Button>
                 </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+
+                {/* Filters */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold mb-3">Bộ lọc</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="action-filter">Hành động</Label>
+                      <Input
+                        id="action-filter"
+                        placeholder="Ví dụ: CREATE_USER, LOGIN..."
+                        value={filters.action || ""}
+                        onChange={(e) => handleFilterChange("action", e.target.value || undefined)}
+                        className="h-10 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="entity-filter">Loại đối tượng</Label>
+                      <Input
+                        id="entity-filter"
+                        placeholder="Ví dụ: USER, BILL..."
+                        value={filters.entityType || ""}
+                        onChange={(e) => handleFilterChange("entityType", e.target.value || undefined)}
+                        className="h-10 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="user-filter">User ID</Label>
+                      <Input
+                        id="user-filter"
+                        type="number"
+                        placeholder="Nhập User ID"
+                        value={filters.userId || ""}
+                        onChange={(e) =>
+                          handleFilterChange("userId", e.target.value ? parseInt(e.target.value) : undefined)
+                        }
+                        className="h-10 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="start-date-filter">Từ ngày</Label>
+                      <Input
+                        id="start-date-filter"
+                        type="datetime-local"
+                        value={filters.startDate || ""}
+                        onChange={(e) => handleFilterChange("startDate", e.target.value || undefined)}
+                        className="h-10 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="end-date-filter">\u0110\u1ebfn ng\u00e0y</Label>
+                      <Input
+                        id="end-date-filter"
+                        type="datetime-local"
+                        value={filters.endDate || ""}
+                        onChange={(e) => handleFilterChange("endDate", e.target.value || undefined)}
+                        className="h-10 text-base"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button variant="outline" onClick={clearFilters} className="w-full h-10 text-base">
+                        Xóa bộ lọc
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logs Table */}
+                {loading ? (
+                  <div className="text-center py-8">Đang tải...</div>
+                ) : (
+                  <>
+                    <div className="rounded-lg border border-border overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-muted">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">ID</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Thời gian</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Người dùng</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Hành động</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Loại đối tượng</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">ID đối tượng</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Chi tiết</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">IP</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {logs.map((log) => (
+                              <tr key={log.logId} className="hover:bg-muted/50">
+                                <td className="px-4 py-3 text-sm">{log.logId}</td>
+                                <td className="px-4 py-3 text-sm whitespace-nowrap">
+                                {formatDate(log.createdAt)}
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                {log.user ? (
+                                  <div>
+                                    <div className="font-medium">{log.user.username}</div>
+                                    <div className="text-xs text-gray-500">{log.user.fullName}</div>
+                                    <div className="text-xs text-gray-400">
+                                      {log.user.role}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">Hệ thống</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                  {log.action}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm">{log.entityType || "-"}</td>
+                              <td className="px-4 py-3 text-sm">{log.entityId || "-"}</td>
+                              <td className="px-4 py-3 text-sm">
+                                {log.details ? (
+                                  <pre className="text-xs max-w-xs overflow-auto">
+                                    {JSON.stringify(parseDetails(log.details), null, 2)}
+                                  </pre>
+                                ) : (
+                                  "-"
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-sm">{log.ipAddress || "-"}</td>
+                            </tr>
+                          ))}
+                          {logs.length === 0 && (
+                            <tr>
+                              <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                                Không có log nào
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-between items-center flex-wrap gap-4">
+                      <div className="text-base text-muted-foreground">
+                        Hiển thị {logs.length} trong tổng số {total} log
+                      </div>
+                      <div className="flex gap-2 items-center flex-wrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(1)}
+                          disabled={page === 1 || loading}
+                          title="Trang đầu"
+                        >
+                          ««
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(Math.max(1, page - 1))}
+                          disabled={page === 1 || loading}
+                        >
+                          ‹ Trước
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                          {(() => {
+                            const current = page;
+                            const total = totalPages;
+                            const pages = [];
+                            
+                            if (total <= 7) {
+                              for (let i = 1; i <= total; i++) {
+                                pages.push(i);
+                              }
+                            } else {
+                              pages.push(1);
+                              
+                              if (current > 3) {
+                                pages.push('...');
+                              }
+                              
+                              const start = Math.max(2, current - 1);
+                              const end = Math.min(total - 1, current + 1);
+                              
+                              for (let i = start; i <= end; i++) {
+                                if (!pages.includes(i)) {
+                                  pages.push(i);
+                                }
+                              }
+                              
+                              if (current < total - 2) {
+                                pages.push('...');
+                              }
+                              
+                              if (!pages.includes(total)) {
+                                pages.push(total);
+                              }
+                            }
+                            
+                            return pages.map((pageNum, idx) => 
+                              typeof pageNum === 'number' ? (
+                                <Button
+                                  key={pageNum}
+                                  variant={pageNum === current ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => setPage(pageNum)}
+                                  disabled={loading}
+                                  className="min-w-[40px]"
+                                >
+                                  {pageNum}
+                                </Button>
+                              ) : (
+                                <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                                  {pageNum}
+                                </span>
+                              )
+                            );
+                          })()}
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(Math.min(totalPages, page + 1))}
+                          disabled={page === totalPages || loading}
+                        >
+                          Sau ›
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(totalPages)}
+                          disabled={page === totalPages || loading}
+                          title="Trang cuối"
+                        >
+                          »»
+                        </Button>
+                        
+                        <div className="flex items-center gap-2 ml-2">
+                          <span className="text-base text-muted-foreground">Đến trang:</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max={totalPages}
+                            placeholder={page.toString()}
+                            className="w-20 px-3 py-2 text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                const value = parseInt((e.target as HTMLInputElement).value);
+                                if (value >= 1 && value <= totalPages) {
+                                  setPage(value);
+                                  (e.target as HTMLInputElement).value = '';
+                                }
+                              }
+                            }}
+                            disabled={loading}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
