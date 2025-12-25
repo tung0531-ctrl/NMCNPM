@@ -199,59 +199,8 @@ const FeeTypeManagementPage = () => {
         }).format(amount);
     };
 
-    const renderPagination = () => {
-        const { currentPage, totalPages } = pagination;
-        const pages: (number | string)[] = [];
-        
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
-            }
-        } else {
-            if (currentPage <= 4) {
-                for (let i = 1; i <= 5; i++) pages.push(i);
-                pages.push('...');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 3) {
-                pages.push(1);
-                pages.push('...');
-                for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-            } else {
-                pages.push(1);
-                pages.push('...');
-                for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-                pages.push('...');
-                pages.push(totalPages);
-            }
-        }
-        
-        return pages.map((page, index) => {
-            if (page === '...') {
-                return (
-                    <span key={`ellipsis-${index}`} className="px-3 py-2">
-                        ...
-                    </span>
-                );
-            }
-            
-            return (
-                <Button
-                    key={page}
-                    variant={currentPage === page ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handlePageChange(page as number)}
-                    disabled={loading}
-                >
-                    {page}
-                </Button>
-            );
-        });
-    };
-
     return (
-        <div className="relative min-h-screen">
-            <div className="fixed inset-0 -z-10 bg-gradient-purple" />
-            <div className="min-h-screen p-6 md:p-10">
+        <div className="min-h-screen p-6 md:p-10 bg-gradient-purple">
                 <div className="max-w-7xl mx-auto">
                     <Card className="border-border">
                         <CardContent className="p-6 md:p-8">
@@ -259,22 +208,23 @@ const FeeTypeManagementPage = () => {
                                 {/* Header */}
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-2">
-                                        <h1 className="text-3xl font-bold">Quản lý danh mục khoản thu</h1>
-                                        <p className="text-muted-foreground">
+                                        <h1 className="text-3xl font-bold">Danh mục khoản thu</h1>
+                                        <p className="text-base text-muted-foreground">
                                             Quản lý các danh mục khoản thu trong hệ thống
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button style={{ color: 'red' }} variant="outline" onClick={() => navigate('/bills')}>
+                                        <Button style={{ color: 'red' }} variant="outline" onClick={() => navigate('/bills')} className="h-10 text-base px-4">
                                             Quản lý khoản thu
                                         </Button>
-                                        <Button onClick={handleCreate}>
+                                        <Button onClick={handleCreate} className="h-10 text-base px-4">
                                             <Plus className="w-4 h-4 mr-2" />
                                             Thêm loại khoản thu
                                         </Button>
                                         <Button
                                             variant="outline"
                                             onClick={() => navigate('/')}
+                                            className="h-10 text-base px-4"
                                         >
                                             ← Về trang chủ
                                         </Button>
@@ -284,21 +234,22 @@ const FeeTypeManagementPage = () => {
                                 {/* Filters */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="feeName">Tên loại khoản thu</Label>
+                                        <Label htmlFor="feeName" className="text-base">Tên loại khoản thu</Label>
                                         <Input
                                             id="feeName"
                                             type="text"
                                             placeholder="Nhập tên loại khoản thu..."
                                             value={filters.feeName || ''}
                                             onChange={(e) => setFilters({ ...filters, feeName: e.target.value })}
+                                            className="h-10 text-base"
                                         />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="isActive">Trạng thái hoạt động</Label>
+                                        <Label htmlFor="isActive" className="text-base">Trạng thái hoạt động</Label>
                                         <select
                                             id="isActive"
                                             title="Trạng thái hoạt động"
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                             value={filters.isActive || ''}
                                             onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}
                                         >
@@ -310,7 +261,7 @@ const FeeTypeManagementPage = () => {
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <Button onClick={handleSearch} disabled={loading}>
+                                    <Button onClick={handleSearch} disabled={loading} className="h-10 text-base px-4">
                                         {loading ? 'Đang tìm...' : 'Tìm kiếm'}
                                     </Button>
                                     <Button 
@@ -318,6 +269,7 @@ const FeeTypeManagementPage = () => {
                                         onClick={() => {
                                             setFilters({ feeName: '', isActive: '', page: 1, limit: 10 });
                                         }}
+                                        className="h-10 text-base px-4"
                                     >
                                         Xóa bộ lọc
                                     </Button>
@@ -336,13 +288,13 @@ const FeeTypeManagementPage = () => {
                                         <table className="w-full">
                                             <thead className="bg-muted">
                                                 <tr>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">ID</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Tên khoản thu</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Đơn giá</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Đơn vị</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Mô tả</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Trạng thái</th>
-                                                    <th className="px-4 py-3 text-right text-sm font-semibold">Thao tác</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">ID</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Tên khoản thu</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Đơn giá</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Đơn vị</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Mô tả</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Trạng thái</th>
+                                                    <th className="px-4 py-3 text-right text-base font-semibold">Thao tác</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-border">
@@ -360,14 +312,14 @@ const FeeTypeManagementPage = () => {
                                                     </tr>
                                                 ) : (
                                                     feeTypes.map((feeType) => (
-                                                        <tr key={feeType.feeTypeId} className="hover:bg-muted/50">
-                                                            <td className="px-4 py-3 text-sm">{feeType.feeTypeId}</td>
-                                                            <td className="px-4 py-3 text-sm font-medium">{feeType.feeName}</td>
-                                                            <td className="px-4 py-3 text-sm">{formatCurrency(feeType.unitPrice)}</td>
-                                                            <td className="px-4 py-3 text-sm">{feeType.unit || '-'}</td>
-                                                            <td className="px-4 py-3 text-sm max-w-xs truncate">{feeType.description || '-'}</td>
-                                                            <td className="px-4 py-3 text-sm">
-                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                        <tr key={feeType.feeTypeId} className="hover:bg-muted/50 transition-colors">
+                                                            <td className="px-4 py-4 text-base font-medium">#{feeType.feeTypeId}</td>
+                                                            <td className="px-4 py-4 text-base font-medium">{feeType.feeName}</td>
+                                                            <td className="px-4 py-4 text-base">{formatCurrency(feeType.unitPrice)}</td>
+                                                            <td className="px-4 py-4 text-base">{feeType.unit || '-'}</td>
+                                                            <td className="px-4 py-4 text-base max-w-xs truncate">{feeType.description || '-'}</td>
+                                                            <td className="px-4 py-4">
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
                                                                     feeType.isActive !== false 
                                                                         ? 'bg-green-100 text-green-800' 
                                                                         : 'bg-gray-100 text-gray-800'
@@ -375,21 +327,24 @@ const FeeTypeManagementPage = () => {
                                                                     {feeType.isActive !== false ? 'Hoạt động' : 'Ngừng'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-4 py-3 text-right">
+                                                            <td className="px-4 py-4 text-right">
                                                                 <DropdownMenu>
                                                                     <DropdownMenuTrigger asChild>
-                                                                        <Button variant="ghost" size="sm">
+                                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                                                                             <MoreVertical className="w-4 h-4" />
                                                                         </Button>
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">
-                                                                        <DropdownMenuItem onClick={() => handleEdit(feeType)}>
+                                                                        <DropdownMenuItem 
+                                                                            onClick={() => handleEdit(feeType)}
+                                                                            className="cursor-pointer"
+                                                                        >
                                                                             <Pencil className="w-4 h-4 mr-2" />
                                                                             Chỉnh sửa
                                                                         </DropdownMenuItem>
                                                                         <DropdownMenuItem 
                                                                             onClick={() => handleDelete(feeType)}
-                                                                            className="text-red-600"
+                                                                            className="cursor-pointer text-red-600 focus:text-red-600"
                                                                         >
                                                                             <Trash2 className="w-4 h-4 mr-2" />
                                                                             Xóa
@@ -408,29 +363,134 @@ const FeeTypeManagementPage = () => {
                                 {/* Pagination */}
                                 {pagination.totalPages > 1 && (
                                     <div className="flex justify-between items-center flex-wrap gap-4">
-                                        <div className="text-sm text-muted-foreground">
-                                            Hiển thị {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1} đến{' '}
-                                            {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} của{' '}
-                                            {pagination.totalItems} loại khoản thu
+                                        <div className="text-base text-muted-foreground">
+                                            Hiển thị {feeTypes.length} trong tổng số {pagination.totalItems} loại khoản thu
                                         </div>
-                                        <div className="flex gap-2 flex-wrap">
+                                        <div className="flex gap-2 items-center flex-wrap">
+                                            {/* First Page */}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handlePageChange(1)}
+                                                disabled={pagination.currentPage === 1 || loading}
+                                                title="Trang đầu"
+                                            >
+                                                ««
+                                            </Button>
+                                            
+                                            {/* Previous Page */}
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                                                 disabled={pagination.currentPage === 1 || loading}
                                             >
-                                                Trước
+                                                ‹ Trước
                                             </Button>
-                                            {renderPagination()}
+                                            
+                                            {/* Page Numbers with Ellipsis */}
+                                            <div className="flex items-center gap-1">
+                                                {(() => {
+                                                    const current = pagination.currentPage;
+                                                    const total = pagination.totalPages;
+                                                    const pages = [];
+                                                    
+                                                    if (total <= 7) {
+                                                        // Show all pages if total <= 7
+                                                        for (let i = 1; i <= total; i++) {
+                                                            pages.push(i);
+                                                        }
+                                                    } else {
+                                                        // Always show first page
+                                                        pages.push(1);
+                                                        
+                                                        if (current > 3) {
+                                                            pages.push('...');
+                                                        }
+                                                        
+                                                        // Show pages around current
+                                                        const start = Math.max(2, current - 1);
+                                                        const end = Math.min(total - 1, current + 1);
+                                                        
+                                                        for (let i = start; i <= end; i++) {
+                                                            if (!pages.includes(i)) {
+                                                                pages.push(i);
+                                                            }
+                                                        }
+                                                        
+                                                        if (current < total - 2) {
+                                                            pages.push('...');
+                                                        }
+                                                        
+                                                        // Always show last page
+                                                        if (!pages.includes(total)) {
+                                                            pages.push(total);
+                                                        }
+                                                    }
+                                                    
+                                                    return pages.map((page, idx) => 
+                                                        typeof page === 'number' ? (
+                                                            <Button
+                                                                key={page}
+                                                                variant={page === current ? 'default' : 'outline'}
+                                                                size="sm"
+                                                                onClick={() => handlePageChange(page)}
+                                                                disabled={loading}
+                                                                className="min-w-[40px]"
+                                                            >
+                                                                {page}
+                                                            </Button>
+                                                        ) : (
+                                                            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                                                                {page}
+                                                            </span>
+                                                        )
+                                                    );
+                                                })()}
+                                            </div>
+                                            
+                                            {/* Next Page */}
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                                                 disabled={pagination.currentPage === pagination.totalPages || loading}
                                             >
-                                                Sau
+                                                Sau ›
                                             </Button>
+                                            
+                                            {/* Last Page */}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handlePageChange(pagination.totalPages)}
+                                                disabled={pagination.currentPage === pagination.totalPages || loading}
+                                                title="Trang cuối"
+                                            >
+                                                »»
+                                            </Button>
+                                            
+                                            {/* Go to Page Input */}
+                                            <div className="flex items-center gap-2 ml-2">
+                                                <span className="text-base text-muted-foreground">Đến trang:</span>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max={pagination.totalPages}
+                                                    placeholder={pagination.currentPage.toString()}
+                                                    className="w-20 px-3 py-2 text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            const value = parseInt((e.target as HTMLInputElement).value);
+                                                            if (value >= 1 && value <= pagination.totalPages) {
+                                                                handlePageChange(value);
+                                                                (e.target as HTMLInputElement).value = '';
+                                                            }
+                                                        }
+                                                    }}
+                                                    disabled={loading}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -438,30 +498,29 @@ const FeeTypeManagementPage = () => {
                                 {/* Summary */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Card className="border-border">
-                                        <CardContent className="p-6">
-                                            <div className="text-sm text-muted-foreground mb-1">Tổng số loại khoản thu</div>
-                                            <div className="text-2xl font-bold">{pagination.totalItems}</div>
+                                        <CardContent className="p-4">
+                                            <p className="text-base text-muted-foreground">Tổng số loại khoản thu</p>
+                                            <p className="text-2xl font-bold">{pagination.totalItems}</p>
                                         </CardContent>
                                     </Card>
                                     <Card className="border-border">
-                                        <CardContent className="p-6">
-                                            <div className="text-sm text-muted-foreground mb-1">Đang hoạt động</div>
-                                            <div className="text-2xl font-bold text-green-600">
+                                        <CardContent className="p-4">
+                                            <p className="text-base text-muted-foreground">Đang hoạt động</p>
+                                            <p className="text-2xl font-bold text-green-600">
                                                 {feeTypes.filter(ft => ft.isActive !== false).length}
-                                            </div>
+                                            </p>
                                         </CardContent>
                                     </Card>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
-                </div>
 
-                {/* Edit Dialog */}
-                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                    <DialogContent className="sm:max-w-[525px]">
-                        <DialogHeader>
-                            <DialogTitle>Chỉnh sửa loại khoản thu</DialogTitle>
+                    {/* Edit Dialog */}
+                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                        <DialogContent className="sm:max-w-[525px]">
+                            <DialogHeader>
+                                <DialogTitle>Chỉnh sửa loại khoản thu</DialogTitle>
                             <DialogDescription>
                                 Cập nhật thông tin loại khoản thu
                             </DialogDescription>

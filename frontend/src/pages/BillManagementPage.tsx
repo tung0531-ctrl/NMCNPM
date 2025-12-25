@@ -296,22 +296,23 @@ const BillManagementPage = () => {
                                 {/* Header */}
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-2">
-                                        <h1 className="text-3xl font-bold">Quản lý các khoản thu</h1>
-                                        <p className="text-muted-foreground">
+                                        <h1 className="text-3xl font-bold">Quản lý khoản thu</h1>
+                                        <p className="text-base text-muted-foreground">
                                             Theo dõi và quản lý các khoản thu phí của hộ gia đình
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button style={{ color: 'red' }} variant="outline" onClick={() => navigate('/fee-types')}>
+                                        <Button style={{ color: 'red' }} variant="outline" onClick={() => navigate('/fee-types')} className="h-10 text-base px-4">
                                             Danh mục khoản thu
                                         </Button>
-                                        <Button onClick={handleCreate}>
+                                        <Button onClick={handleCreate} className="h-10 text-base px-4">
                                             <Plus className="mr-2 h-4 w-4" />
                                             Thêm khoản thu
                                         </Button>
                                         <Button
                                             variant="outline"
                                             onClick={() => navigate('/')}
+                                            className="h-10 text-base px-4"
                                         >
                                             ← Về trang chủ
                                         </Button>
@@ -321,41 +322,44 @@ const BillManagementPage = () => {
                                 {/* Filters */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="billId">ID hóa đơn</Label>
+                                        <Label htmlFor="billId" className="text-base">ID hóa đơn</Label>
                                         <Input
                                             id="billId"
                                             type="number"
                                             placeholder="Nhập ID..."
                                             value={filters.billId || ''}
                                             onChange={(e) => setFilters({ ...filters, billId: e.target.value })}
+                                            className="h-10 text-base"
                                         />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="householdName">Tên hộ</Label>
+                                        <Label htmlFor="householdName" className="text-base">Tên hộ</Label>
                                         <Input
                                             id="householdName"
                                             type="text"
                                             placeholder="Nhập tên hộ..."
                                             value={filters.householdName || ''}
                                             onChange={(e) => setFilters({ ...filters, householdName: e.target.value })}
+                                            className="h-10 text-base"
                                         />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="paymentPeriod">Kỳ thanh toán</Label>
+                                        <Label htmlFor="paymentPeriod" className="text-base">Kỳ thanh toán</Label>
                                         <Input
                                             id="paymentPeriod"
                                             type="text"
                                             placeholder="VD: 2025-12"
                                             value={filters.paymentPeriod || ''}
                                             onChange={(e) => setFilters({ ...filters, paymentPeriod: e.target.value })}
+                                            className="h-10 text-base"
                                         />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="status">Trạng thái</Label>
+                                        <Label htmlFor="status" className="text-base">Trạng thái</Label>
                                         <select
                                             id="status"
                                             title="Trạng thái"
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                             value={filters.status || ''}
                                             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                                         >
@@ -367,19 +371,20 @@ const BillManagementPage = () => {
                                         </select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="collectorName">Người thu</Label>
+                                        <Label htmlFor="collectorName" className="text-base">Người thu</Label>
                                         <Input
                                             id="collectorName"
                                             type="text"
                                             placeholder="Nhập tên người thu..."
                                             value={filters.collectorName || ''}
                                             onChange={(e) => setFilters({ ...filters, collectorName: e.target.value })}
+                                            className="h-10 text-base"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <Button onClick={handleSearch} disabled={loading}>
+                                    <Button onClick={handleSearch} disabled={loading} className="h-10 text-base px-4">
                                         {loading ? 'Đang tải...' : 'Tìm kiếm'}
                                     </Button>
                                     <Button 
@@ -388,6 +393,7 @@ const BillManagementPage = () => {
                                             setFilters({ billId: '', householdName: '', paymentPeriod: '', status: '', collectorName: '', page: 1, limit: 10 });
                                             fetchBills();
                                         }}
+                                        className="h-10 text-base px-4"
                                     >
                                         Xóa bộ lọc
                                     </Button>
@@ -406,15 +412,15 @@ const BillManagementPage = () => {
                                         <table className="w-full">
                                             <thead className="bg-muted">
                                                 <tr>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">ID</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Tên hộ</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Kỳ thanh toán</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Tiêu đề</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Tổng tiền</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Đã trả</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Trạng thái</th>
-                                                    <th className="px-4 py-3 text-left text-sm font-semibold">Người thu</th>
-                                                    <th className="px-4 py-3 text-right text-sm font-semibold">Thao tác</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">ID</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Tên hộ</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Kỳ thanh toán</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Tiêu đề</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Tổng tiền</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Đã trả</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Trạng thái</th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">Người thu</th>
+                                                    <th className="px-4 py-3 text-right text-base font-semibold">Thao tác</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-border">
@@ -433,22 +439,22 @@ const BillManagementPage = () => {
                                                 ) : (
                                                     bills.map((bill) => (
                                                         <tr key={bill.billId} className="hover:bg-muted/50 transition-colors">
-                                                            <td className="px-4 py-4 text-sm font-medium">#{bill.billId}</td>
-                                                            <td className="px-4 py-4 text-sm">{bill.householdName}</td>
-                                                            <td className="px-4 py-4 text-sm">{bill.paymentPeriod}</td>
-                                                            <td className="px-4 py-4 text-sm">{bill.title}</td>
-                                                            <td className="px-4 py-4 text-sm font-medium">
+                                                            <td className="px-4 py-4 text-base font-medium">#{bill.billId}</td>
+                                                            <td className="px-4 py-4 text-base">{bill.householdName}</td>
+                                                            <td className="px-4 py-4 text-base">{bill.paymentPeriod}</td>
+                                                            <td className="px-4 py-4 text-base">{bill.title}</td>
+                                                            <td className="px-4 py-4 text-base font-medium">
                                                                 {Number(bill.totalAmount).toLocaleString('vi-VN')} đ
                                                             </td>
-                                                            <td className="px-4 py-4 text-sm font-medium text-blue-600">
+                                                            <td className="px-4 py-4 text-base font-medium text-blue-600">
                                                                 {Number(bill.paidAmount).toLocaleString('vi-VN')} đ
                                                             </td>
                                                             <td className="px-4 py-4">
-                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(bill.status)}`}>
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(bill.status)}`}>
                                                                     {bill.status}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-4 py-4 text-sm">
+                                                            <td className="px-4 py-4 text-base">
                                                                 {bill.collectorName || '-'}
                                                             </td>
                                                             <td className="px-4 py-4 text-right">
@@ -487,7 +493,7 @@ const BillManagementPage = () => {
                                 {/* Pagination */}
                                 {pagination.totalPages > 1 && (
                                     <div className="flex justify-between items-center flex-wrap gap-4">
-                                        <div className="text-sm text-muted-foreground">
+                                        <div className="text-base text-muted-foreground">
                                             Hiển thị {bills.length} trong tổng số {pagination.totalItems} hóa đơn
                                         </div>
                                         <div className="flex gap-2 items-center flex-wrap">
@@ -596,13 +602,13 @@ const BillManagementPage = () => {
                                             
                                             {/* Go to Page Input */}
                                             <div className="flex items-center gap-2 ml-2">
-                                                <span className="text-sm text-muted-foreground">Đến trang:</span>
+                                                <span className="text-base text-muted-foreground">Đến trang:</span>
                                                 <input
                                                     type="number"
                                                     min="1"
                                                     max={pagination.totalPages}
                                                     placeholder={pagination.currentPage.toString()}
-                                                    className="w-16 px-2 py-1 text-sm border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                                                    className="w-20 px-3 py-2 text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                                                     onKeyPress={(e) => {
                                                         if (e.key === 'Enter') {
                                                             const value = parseInt((e.target as HTMLInputElement).value);
@@ -620,24 +626,16 @@ const BillManagementPage = () => {
                                 )}
 
                                 {/* Summary */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Card className="border-border">
                                         <CardContent className="p-4">
-                                            <p className="text-sm text-muted-foreground">Tổng số hóa đơn</p>
+                                            <p className="text-base text-muted-foreground">Tổng số hóa đơn</p>
                                             <p className="text-2xl font-bold">{pagination.totalItems}</p>
                                         </CardContent>
                                     </Card>
                                     <Card className="border-border">
                                         <CardContent className="p-4">
-                                            <p className="text-sm text-muted-foreground">Tổng tiền hóa đơn (trang hiện tại)</p>
-                                            <p className="text-2xl font-bold">
-                                                {bills.reduce((sum, bill) => sum + Number(bill.totalAmount), 0).toLocaleString('vi-VN')} đ
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="border-border">
-                                        <CardContent className="p-4">
-                                            <p className="text-sm text-muted-foreground">Đã thanh toán</p>
+                                            <p className="text-base text-muted-foreground">Đã thanh toán</p>
                                             <p className="text-2xl font-bold text-green-600">
                                                 {bills.filter(b => b.status === 'Đã thanh toán').length}
                                             </p>
@@ -661,11 +659,11 @@ const BillManagementPage = () => {
                         <form onSubmit={handleSubmit(onSubmitEdit)}>
                             <div className="grid gap-4 py-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-household">Hộ gia đình</Label>
+                                    <Label htmlFor="edit-household" className="text-base">Hộ gia đình</Label>
                                     <select
                                         id="edit-household"
                                         title="Hộ gia đình"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         {...register('householdId', { 
                                             required: 'Vui lòng chọn hộ gia đình',
                                             valueAsNumber: true 
@@ -684,11 +682,11 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-feeType">Danh mục khoản thu</Label>
+                                    <Label htmlFor="edit-feeType" className="text-base">Danh mục khoản thu</Label>
                                     <select
                                         id="edit-feeType"
                                         title="Danh mục khoản thu"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         value={selectedFeeType}
                                         onChange={(e) => handleFeeTypeChange(e.target.value)}
                                     >
@@ -702,13 +700,13 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-title">Tiêu đề</Label>
+                                    <Label htmlFor="edit-title" className="text-base">Tiêu đề</Label>
                                     <Input
                                         id="edit-title"
                                         {...register('title', { required: 'Tiêu đề là bắt buộc' })}
                                         placeholder="Nhập tiêu đề..."
                                         disabled={selectedFeeType !== 'other'}
-                                        className={selectedFeeType !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
+                                        className={`h-10 text-base ${selectedFeeType !== 'other' ? 'bg-muted cursor-not-allowed' : ''}`}
                                     />
                                     {errors.title && (
                                         <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -716,7 +714,7 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-totalAmount">Tổng tiền (VNĐ)</Label>
+                                    <Label htmlFor="edit-totalAmount" className="text-base">Tổng tiền (VNĐ)</Label>
                                     <Input
                                         id="edit-totalAmount"
                                         type="number"
@@ -726,7 +724,7 @@ const BillManagementPage = () => {
                                         })}
                                         placeholder="Nhập tổng tiền..."
                                         disabled={selectedFeeType !== 'other'}
-                                        className={selectedFeeType !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
+                                        className={`h-10 text-base ${selectedFeeType !== 'other' ? 'bg-muted cursor-not-allowed' : ''}`}
                                     />
                                     {errors.totalAmount && (
                                         <p className="text-sm text-red-500">{errors.totalAmount.message}</p>
@@ -734,7 +732,7 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-paidAmount">Số tiền đã trả (VNĐ)</Label>
+                                    <Label htmlFor="edit-paidAmount" className="text-base">Số tiền đã trả (VNĐ)</Label>
                                     <Input
                                         id="edit-paidAmount"
                                         type="number"
@@ -747,6 +745,7 @@ const BillManagementPage = () => {
                                             }
                                         })}
                                         placeholder="Nhập số tiền đã trả..."
+                                        className="h-10 text-base"
                                     />
                                     {errors.paidAmount && (
                                         <p className="text-sm text-red-500">{errors.paidAmount.message}</p>
@@ -754,11 +753,12 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-paymentPeriod">Kỳ thanh toán</Label>
+                                    <Label htmlFor="edit-paymentPeriod" className="text-base">Kỳ thanh toán</Label>
                                     <Input
                                         id="edit-paymentPeriod"
                                         {...register('paymentPeriod', { required: 'Kỳ thanh toán là bắt buộc' })}
                                         placeholder="VD: 2025-12"
+                                        className="h-10 text-base"
                                     />
                                     {errors.paymentPeriod && (
                                         <p className="text-sm text-red-500">{errors.paymentPeriod.message}</p>
@@ -766,11 +766,11 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-collectorName">Người thu</Label>
+                                    <Label htmlFor="edit-collectorName" className="text-base">Người thu</Label>
                                     <select
                                         id="edit-collectorName"
                                         title="Người thu"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         {...register('collectorName')}
                                     >
                                         <option value="">-- Không chọn --</option>
@@ -788,10 +788,11 @@ const BillManagementPage = () => {
                                     variant="outline" 
                                     onClick={() => setIsEditDialogOpen(false)}
                                     disabled={isSubmitting}
+                                    className="h-10 text-base px-4"
                                 >
                                     Hủy
                                 </Button>
-                                <Button type="submit" disabled={isSubmitting}>
+                                <Button type="submit" disabled={isSubmitting} className="h-10 text-base px-4">
                                     {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
                                 </Button>
                             </DialogFooter>
@@ -811,11 +812,11 @@ const BillManagementPage = () => {
                         <form onSubmit={handleSubmitCreate(onSubmitCreate)}>
                             <div className="grid gap-4 py-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-household">Hộ gia đình</Label>
+                                    <Label htmlFor="create-household" className="text-base">Hộ gia đình</Label>
                                     <select
                                         id="create-household"
                                         title="Hộ gia đình"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         {...registerCreate('householdId', { 
                                             required: 'Vui lòng chọn hộ gia đình',
                                             valueAsNumber: true 
@@ -834,11 +835,11 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-feeType">Danh mục khoản thu</Label>
+                                    <Label htmlFor="create-feeType" className="text-base">Danh mục khoản thu</Label>
                                     <select
                                         id="create-feeType"
                                         title="Danh mục khoản thu"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         value={selectedFeeTypeCreate}
                                         onChange={(e) => handleFeeTypeChangeCreate(e.target.value)}
                                     >
@@ -852,13 +853,13 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-title">Tiêu đề</Label>
+                                    <Label htmlFor="create-title" className="text-base">Tiêu đề</Label>
                                     <Input
                                         id="create-title"
                                         {...registerCreate('title', { required: 'Tiêu đề là bắt buộc' })}
                                         placeholder="Nhập tiêu đề..."
                                         disabled={selectedFeeTypeCreate !== 'other'}
-                                        className={selectedFeeTypeCreate !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
+                                        className={`h-10 text-base ${selectedFeeTypeCreate !== 'other' ? 'bg-muted cursor-not-allowed' : ''}`}
                                     />
                                     {errorsCreate.title && (
                                         <p className="text-sm text-red-500">{errorsCreate.title.message}</p>
@@ -866,7 +867,7 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-totalAmount">Tổng tiền (VNĐ)</Label>
+                                    <Label htmlFor="create-totalAmount" className="text-base">Tổng tiền (VNĐ)</Label>
                                     <Input
                                         id="create-totalAmount"
                                         type="number"
@@ -877,7 +878,7 @@ const BillManagementPage = () => {
                                         })}
                                         placeholder="Nhập tổng tiền..."
                                         disabled={selectedFeeTypeCreate !== 'other'}
-                                        className={selectedFeeTypeCreate !== 'other' ? 'bg-muted cursor-not-allowed' : ''}
+                                        className={`h-10 text-base ${selectedFeeTypeCreate !== 'other' ? 'bg-muted cursor-not-allowed' : ''}`}
                                     />
                                     {errorsCreate.totalAmount && (
                                         <p className="text-sm text-red-500">{errorsCreate.totalAmount.message}</p>
@@ -885,7 +886,7 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-paidAmount">Số tiền đã trả (VNĐ)</Label>
+                                    <Label htmlFor="create-paidAmount" className="text-base">Số tiền đã trả (VNĐ)</Label>
                                     <Input
                                         id="create-paidAmount"
                                         type="number"
@@ -899,6 +900,7 @@ const BillManagementPage = () => {
                                             }
                                         })}
                                         placeholder="Nhập số tiền đã trả..."
+                                        className="h-10 text-base"
                                     />
                                     {errorsCreate.paidAmount && (
                                         <p className="text-sm text-red-500">{errorsCreate.paidAmount.message}</p>
@@ -906,11 +908,12 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-paymentPeriod">Kỳ thanh toán</Label>
+                                    <Label htmlFor="create-paymentPeriod" className="text-base">Kỳ thanh toán</Label>
                                     <Input
                                         id="create-paymentPeriod"
                                         {...registerCreate('paymentPeriod', { required: 'Kỳ thanh toán là bắt buộc' })}
                                         placeholder="VD: 2025-12"
+                                        className="h-10 text-base"
                                     />
                                     {errorsCreate.paymentPeriod && (
                                         <p className="text-sm text-red-500">{errorsCreate.paymentPeriod.message}</p>
@@ -918,11 +921,11 @@ const BillManagementPage = () => {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="create-collectorName">Người thu</Label>
+                                    <Label htmlFor="create-collectorName" className="text-base">Người thu</Label>
                                     <select
                                         id="create-collectorName"
                                         title="Người thu"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         {...registerCreate('collectorName')}
                                     >
                                         <option value="">-- Không chọn --</option>
@@ -940,10 +943,11 @@ const BillManagementPage = () => {
                                     variant="outline" 
                                     onClick={() => setIsCreateDialogOpen(false)}
                                     disabled={isSubmitting}
+                                    className="h-10 text-base px-4"
                                 >
                                     Hủy
                                 </Button>
-                                <Button type="submit" disabled={isSubmitting}>
+                                <Button type="submit" disabled={isSubmitting} className="h-10 text-base px-4">
                                     {isSubmitting ? 'Đang tạo...' : 'Tạo khoản thu'}
                                 </Button>
                             </DialogFooter>

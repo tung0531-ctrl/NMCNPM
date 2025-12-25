@@ -292,7 +292,7 @@ export const updateBill = async (req, res) => {
 
         res.status(200).json({
             billId: billData.billId,
-            householdName: billData.household?.ownerName || '',
+            householdName: billData.household_bill?.ownerName || '',
             title: billData.title,
             totalAmount: billData.totalAmount,
             paidAmount: billData.paidAmount,
@@ -386,7 +386,7 @@ export const createBill = async (req, res) => {
 
         res.status(201).json({
             billId: billData.billId,
-            householdName: billData.household?.ownerName || '',
+            householdName: billData.household_bill?.ownerName || '',
             title: billData.title,
             totalAmount: billData.totalAmount,
             paidAmount: billData.paidAmount,
