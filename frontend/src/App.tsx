@@ -8,6 +8,8 @@ import BillManagementPage from './pages/BillManagementPage';
 import FeeTypeManagementPage from './pages/FeeTypeManagementPage';
 import HouseholdManagementPage from './pages/HouseholdManagementPage';
 import ResidentManagementPage from './pages/ResidentManagementPage';
+import UserManagementPage from './pages/UserManagementPage';
+import LogViewerPage from './pages/LogViewerPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -62,6 +64,22 @@ function App() {
       element = {
         <AdminRoute>
           <ResidentManagementPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/users'
+      element = {
+        <AdminRoute>
+          <UserManagementPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/logs'
+      element = {
+        <AdminRoute>
+          <LogViewerPage/>
         </AdminRoute>
       }
       />

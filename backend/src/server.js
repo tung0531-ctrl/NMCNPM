@@ -9,6 +9,7 @@ import feeTypeRoute from "./routes/feeTypeRoute.js";
 import householdRoute from "./routes/householdRoute.js";
 import adminRoute from "./routes/adminRoute.js";
 import residentRoute from "./routes/residentRoute.js";
+import logRoute from "./routes/logRoute.js";
 import { protectedRoute } from "./middlewares/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
@@ -46,6 +47,7 @@ app.use('/api/residents', residentRoute); // Add resident route
 // Private route
 app.use(protectedRoute);
 app.use('/api/users', userRoute);
+app.use('/api/logs', logRoute); // Add log route
 
 // Basic error handling
 app.use((err, req, res, next) => {

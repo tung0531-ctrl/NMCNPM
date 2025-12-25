@@ -2,6 +2,7 @@ import Bill from './Bill.js';
 import Household from './Household.js';
 import User from './User.js';
 import Resident from './Resident.js';
+import Log from './Log.js';
 
 // Define associations
 Bill.belongsTo(Household, {
@@ -34,4 +35,15 @@ Household.hasMany(Resident, {
     as: 'residents'
 });
 
-export { Bill, Household, User, Resident };
+// Log associations
+Log.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+
+User.hasMany(Log, {
+    foreignKey: 'userId',
+    as: 'logs'
+});
+
+export { Bill, Household, User, Resident, Log };
