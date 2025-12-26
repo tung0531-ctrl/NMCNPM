@@ -221,6 +221,17 @@ export const updateBill = async (req, res) => {
             return res.status(404).json({ message: 'Bill not found' });
         }
 
+        // Capture old values before update
+        const oldValues = {
+            householdId: bill.householdId,
+            title: bill.title,
+            totalAmount: bill.totalAmount,
+            paidAmount: bill.paidAmount,
+            feeTypeId: bill.feeTypeId,
+            billingPeriod: bill.billingPeriod,
+            collectorId: bill.collectorId
+        };
+
         // Update household if provided
         if (householdId !== undefined) {
             const household = await Household.findByPk(householdId);
@@ -295,9 +306,26 @@ export const updateBill = async (req, res) => {
             billData.billingPeriod
         );
 
+        // New values after update
+        const newValues = {
+            householdId: bill.householdId,
+            title: bill.title,
+            totalAmount: bill.totalAmount,
+            paidAmount: bill.paidAmount,
+            feeTypeId: bill.feeTypeId,
+            billingPeriod: bill.billingPeriod,
+            collectorId: bill.collectorId
+        };
+
         // Log update bill activity
         await createLog(req.user.userId, LogActions.UPDATE_BILL, EntityTypes.BILL, id, 
-            { billId: id, householdName: billData.household_bill?.ownerName, title: billData.title }, req);
+            { 
+                billId: id,
+                householdName: billData.household_bill?.ownerName,
+                title: billData.title,
+                old_values: oldValues,
+                new_values: newValues
+            }, req);
 
         res.status(200).json({
             billId: billData.billId,
@@ -395,7 +423,17 @@ export const createBill = async (req, res) => {
 
         // Log create bill activity
         await createLog(req.user.userId, LogActions.CREATE_BILL, EntityTypes.BILL, bill.billId, 
-            { householdName: billData.household_bill?.ownerName, title: billData.title, totalAmount: billData.totalAmount }, req);
+            { 
+                householdName: billData.household_bill?.ownerName,
+                householdId: bill.householdId,
+                title: billData.title,
+                totalAmount: billData.totalAmount,
+                paidAmount: billData.paidAmount,
+                feeTypeId: bill.feeTypeId,
+                billingPeriod: billData.billingPeriod,
+                collectorId: bill.collectorId,
+                status: displayStatus
+            }, req);
 
         res.status(201).json({
             billId: billData.billId,
@@ -435,7 +473,13 @@ export const deleteBill = async (req, res) => {
         const billData = {
             billId: bill.billId,
             householdName: bill.household_bill?.ownerName,
-            title: bill.title
+            householdId: bill.householdId,
+            title: bill.title,
+            totalAmount: bill.totalAmount,
+            paidAmount: bill.paidAmount,
+            feeTypeId: bill.feeTypeId,
+            billingPeriod: bill.billingPeriod,
+            collectorId: bill.collectorId
         };
 
         await bill.destroy();

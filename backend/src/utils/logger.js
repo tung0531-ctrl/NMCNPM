@@ -1,5 +1,9 @@
 import Log from "../models/Log.js";
 
+// Cache to prevent duplicate logs within a short time window
+const recentLogs = new Map();
+const DUPLICATE_WINDOW_MS = 1000; // 1 second
+
 /**
  * Create activity log entry
  * @param {number} userId - ID of user performing action
@@ -11,15 +15,95 @@ import Log from "../models/Log.js";
  */
 export const createLog = async (userId, action, entityType, entityId, details, req) => {
     try {
+        // Create a unique key for this log entry
+        const logKey = `${userId}-${action}-${entityType}-${entityId || 'null'}-${Date.now()}`;
+        const simpleKey = `${userId}-${action}-${entityType}-${entityId || 'null'}`;
+        
+        // Check if we recently created a similar log
+        const lastLogTime = recentLogs.get(simpleKey);
+        const now = Date.now();
+        
+        if (lastLogTime && (now - lastLogTime) < DUPLICATE_WINDOW_MS) {
+            // Skip duplicate log within the time window
+            console.log(`⚠️ Skipping duplicate log: ${simpleKey}`);
+            return;
+        }
+        
+        // Update the timestamp for this log type
+        recentLogs.set(simpleKey, now);
+        
+        // Clean up old entries from cache (older than 5 seconds)
+        for (const [key, timestamp] of recentLogs.entries()) {
+            if (now - timestamp > 5000) {
+                recentLogs.delete(key);
+            }
+        }
+        
+        // Extract IP address, checking for proxy headers
+        // Note: In production behind a proxy/load balancer, make sure to:
+        // 1. Set app.set('trust proxy', true) in server.js (already done)
+        // 2. Configure proxy to set X-Forwarded-For or X-Real-IP headers
+        let ipAddress = null;
+        if (req) {
+            // Priority 1: Check for IP in proxy headers (for production with reverse proxy)
+            const forwardedFor = req.headers['x-forwarded-for'];
+            const realIp = req.headers['x-real-ip'];
+            
+            if (forwardedFor) {
+                // X-Forwarded-For can contain multiple IPs: "client, proxy1, proxy2"
+                // Take the first one (the original client IP)
+                ipAddress = forwardedFor.split(',')[0].trim();
+            } else if (realIp) {
+                ipAddress = realIp;
+            } else {
+                // Fallback to connection IP
+                ipAddress = req.ip ||
+                           req.connection?.remoteAddress ||
+                           req.socket?.remoteAddress ||
+                           null;
+            }
+            
+            // Clean up IP format
+            if (ipAddress) {
+                // Convert IPv6 localhost to IPv4
+                if (ipAddress === '::1') {
+                    ipAddress = '127.0.0.1 (localhost)';
+                }
+                // Remove IPv6 prefix if present (::ffff:192.168.1.1 -> 192.168.1.1)
+                else if (ipAddress.startsWith('::ffff:')) {
+                    ipAddress = ipAddress.substring(7);
+                }
+                // Mark localhost
+                else if (ipAddress === '127.0.0.1') {
+                    ipAddress = '127.0.0.1 (localhost)';
+                }
+            }
+        }
+
+        // Extract user agent
+        const userAgent = req?.headers?.['user-agent'] || req?.get?.('user-agent') || null;
+
+        // Add IP and browser info to details for better visibility
+        const enrichedDetails = {
+            ...details,
+            _metadata: {
+                ip_address: ipAddress,
+                user_agent: userAgent,
+                timestamp: new Date().toISOString()
+            }
+        };
+
         await Log.create({
             userId,
             action,
             entityType,
             entityId,
-            details: details ? JSON.stringify(details) : null,
-            ipAddress: req?.ip || req?.connection?.remoteAddress || null,
-            userAgent: req?.get ? req.get('user-agent') : null
+            details: JSON.stringify(enrichedDetails),
+            ipAddress,
+            userAgent
         });
+        
+        console.log(`✅ Log created: ${action} by user ${userId} from IP ${ipAddress}`);
     } catch (error) {
         // Don't throw - logging should not break the main operation
         console.error("Lỗi tạo log:", error);

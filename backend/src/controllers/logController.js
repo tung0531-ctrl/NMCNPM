@@ -34,7 +34,7 @@ export const getLogs = async (req, res) => {
             where,
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [['created_at', 'DESC']],
+            order: [['created_at', 'DESC']], // Use database column name, not model attribute
             include: [{
                 model: User,
                 as: 'user',
@@ -42,8 +42,30 @@ export const getLogs = async (req, res) => {
             }]
         });
 
+        // Convert to JSON and ensure proper date format
+        const logsWithFormattedDate = rows.map(log => {
+            const logData = log.get({ plain: true });
+            
+            // Map created_at to createdAt for frontend
+            if (logData.created_at) {
+                const dateValue = logData.created_at;
+                if (dateValue instanceof Date) {
+                    logData.createdAt = dateValue.toISOString();
+                } else if (typeof dateValue === 'string') {
+                    // Handle MySQL datetime format (YYYY-MM-DD HH:MM:SS)
+                    const date = new Date(dateValue.replace(' ', 'T') + 'Z');
+                    logData.createdAt = date.toISOString();
+                }
+                delete logData.created_at; // Remove snake_case version
+            }
+            
+            return logData;
+        });
+
+        console.log('✅ Sample log being sent:', JSON.stringify(logsWithFormattedDate[0], null, 2));
+
         return res.status(200).json({
-            logs: rows,
+            logs: logsWithFormattedDate,
             total: count,
             page: parseInt(page),
             totalPages: Math.ceil(count / limit)

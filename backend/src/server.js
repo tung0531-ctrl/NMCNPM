@@ -19,6 +19,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Trust proxy - để đọc đúng IP address khi đằng sau proxy/load balancer
+app.set('trust proxy', true);
+
 // Middleware
 // Configure CORS to allow requests from the frontend and allow credentials (cookies)
 const frontendOrigin = process.env.FRONTEND_ORIGIN|| 'http://localhost:5173';

@@ -115,7 +115,13 @@ export const createHouseholdForAdmin = async (req, res) => {
 
         // Log create household activity
         await createLog(req.user.userId, LogActions.CREATE_HOUSEHOLD, EntityTypes.HOUSEHOLD, newHousehold.householdId, 
-            { householdCode: newHousehold.householdCode, ownerName: newHousehold.ownerName }, req);
+            { 
+                householdCode: newHousehold.householdCode,
+                ownerName: newHousehold.ownerName,
+                address: newHousehold.address,
+                areaSqm: newHousehold.areaSqm,
+                userId: newHousehold.userId
+            }, req);
 
         res.status(201).json(newHousehold);
     } catch (error) {
@@ -147,6 +153,15 @@ export const updateHouseholdForAdmin = async (req, res) => {
             });
         }
 
+        // Capture old values
+        const oldValues = {
+            householdCode: household.householdCode,
+            ownerName: household.ownerName,
+            address: household.address,
+            areaSqm: household.areaSqm,
+            userId: household.userId
+        };
+
         // Check if household code already exists (excluding current household)
         const existingHousehold = await Household.findOne({
             where: {
@@ -169,9 +184,22 @@ export const updateHouseholdForAdmin = async (req, res) => {
             userId: userId || null
         });
 
+        // New values after update
+        const newValues = {
+            householdCode,
+            ownerName,
+            address,
+            areaSqm: areaSqm || null,
+            userId: userId || null
+        };
+
         // Log update household activity
         await createLog(req.user.userId, LogActions.UPDATE_HOUSEHOLD, EntityTypes.HOUSEHOLD, householdId, 
-            { householdCode: household.householdCode, ownerName: household.ownerName }, req);
+            { 
+                householdCode: household.householdCode,
+                old_values: oldValues,
+                new_values: newValues
+            }, req);
 
         res.status(200).json(household);
     } catch (error) {
@@ -195,7 +223,13 @@ export const deleteHouseholdForAdmin = async (req, res) => {
             });
         }
 
-        const householdData = { householdCode: household.householdCode, ownerName: household.ownerName };
+        const householdData = {
+            householdCode: household.householdCode,
+            ownerName: household.ownerName,
+            address: household.address,
+            areaSqm: household.areaSqm,
+            userId: household.userId
+        };
 
         await household.destroy();
 

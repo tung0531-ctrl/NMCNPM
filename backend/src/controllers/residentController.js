@@ -108,7 +108,16 @@ export const createResident = async (req, res) => {
 
         // Log create resident activity
         await createLog(req.user.userId, LogActions.CREATE_RESIDENT, EntityTypes.RESIDENT, resident.residentId, 
-            { fullName: resident.fullName, householdId }, req);
+            { 
+                fullName: resident.fullName,
+                householdId: resident.householdId,
+                dateOfBirth: resident.dateOfBirth,
+                identityCardNumber: resident.indentityCardNumber,
+                relationToOwner: resident.relationToOwner,
+                job: resident.job,
+                phoneNumber: resident.phone_number,
+                isStaying: resident.isStaying
+            }, req);
 
         res.status(201).json(resident);
     } catch (error) {
@@ -141,6 +150,18 @@ export const updateResident = async (req, res) => {
             return res.status(404).json({ message: 'Resident not found' });
         }
 
+        // Capture old values
+        const oldValues = {
+            householdId: resident.householdId,
+            fullName: resident.fullName,
+            dateOfBirth: resident.dateOfBirth,
+            indentityCardNumber: resident.indentityCardNumber,
+            relationToOwner: resident.relationToOwner,
+            job: resident.job,
+            phone_number: resident.phone_number,
+            isStaying: resident.isStaying
+        };
+
         await resident.update({
             householdId,
             fullName,
@@ -152,9 +173,25 @@ export const updateResident = async (req, res) => {
             isStaying
         });
 
+        // New values after update
+        const newValues = {
+            householdId,
+            fullName,
+            dateOfBirth,
+            indentityCardNumber,
+            relationToOwner,
+            job,
+            phone_number,
+            isStaying
+        };
+
         // Log update resident activity
         await createLog(req.user.userId, LogActions.UPDATE_RESIDENT, EntityTypes.RESIDENT, id, 
-            { fullName: resident.fullName, householdId }, req);
+            { 
+                fullName: resident.fullName,
+                old_values: oldValues,
+                new_values: newValues
+            }, req);
 
         res.status(200).json(resident);
     } catch (error) {
@@ -177,7 +214,16 @@ export const deleteResident = async (req, res) => {
             return res.status(404).json({ message: 'Resident not found' });
         }
 
-        const residentData = { fullName: resident.fullName, householdId: resident.householdId };
+        const residentData = { 
+            fullName: resident.fullName,
+            householdId: resident.householdId,
+            dateOfBirth: resident.dateOfBirth,
+            identityCardNumber: resident.indentityCardNumber,
+            relationToOwner: resident.relationToOwner,
+            job: resident.job,
+            phoneNumber: resident.phone_number,
+            isStaying: resident.isStaying
+        };
 
         await resident.destroy();
 

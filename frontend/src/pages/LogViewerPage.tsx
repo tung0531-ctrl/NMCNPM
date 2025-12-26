@@ -24,6 +24,9 @@ const LogViewerPage = () => {
       console.log('Fetching logs with filters:', { ...filters, page });
       const data = await logService.getLogs({ ...filters, page });
       console.log('Logs received:', data);
+      console.log('First log ALL fields:', data.logs[0]);
+      console.log('First log createdAt:', data.logs[0]?.createdAt, typeof data.logs[0]?.createdAt);
+      console.log('First log created_at:', data.logs[0]?.created_at, typeof data.logs[0]?.created_at);
       setLogs(data.logs);
       setTotalPages(data.totalPages);
       setTotal(data.total);
@@ -58,9 +61,45 @@ const LogViewerPage = () => {
     fetchLogs();
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('vi-VN');
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) {
+      console.warn('formatDate received empty dateString:', dateString);
+      return '-';
+    }
+    
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateString);
+        return '-';
+      }
+      
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      
+      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    } catch (error) {
+      console.error('Error formatting date:', dateString, error);
+      return '-';
+    }
+  };
+
+  const getBrowserName = (userAgent: string | null) => {
+    if (!userAgent) return "-";
+    
+    if (userAgent.includes("Edg")) return "Edge";
+    if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) return "Chrome";
+    if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return "Safari";
+    if (userAgent.includes("Firefox")) return "Firefox";
+    if (userAgent.includes("Opera") || userAgent.includes("OPR")) return "Opera";
+    
+    return "Khác";
   };
 
   const parseDetails = (details: string | null) => {
@@ -192,7 +231,8 @@ const LogViewerPage = () => {
                               <th className="px-4 py-3 text-left text-sm font-semibold">Loại đối tượng</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold">ID đối tượng</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold">Chi tiết</th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold">IP</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">IP Address</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">Trình duyệt</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border">
@@ -231,12 +271,17 @@ const LogViewerPage = () => {
                                   "-"
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-sm">{log.ipAddress || "-"}</td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className="font-mono text-xs">{log.ipAddress || "-"}</span>
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className="text-xs">{getBrowserName(log.userAgent)}</span>
+                              </td>
                             </tr>
                           ))}
                           {logs.length === 0 && (
                             <tr>
-                              <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                              <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                                 Không có log nào
                               </td>
                             </tr>

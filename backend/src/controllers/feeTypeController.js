@@ -102,7 +102,13 @@ export const createFeeType = async (req, res) => {
 
         // Log create fee type activity
         await createLog(req.user.userId, LogActions.CREATE_FEE_TYPE, EntityTypes.FEE_TYPE, newFeeType.feeTypeId, 
-            { feeName: newFeeType.feeName, unitPrice: newFeeType.unitPrice }, req);
+            { 
+                feeName: newFeeType.feeName,
+                unitPrice: newFeeType.unitPrice,
+                unit: newFeeType.unit,
+                description: newFeeType.description,
+                isActive: newFeeType.isActive
+            }, req);
 
         res.status(201).json(newFeeType);
     } catch (error) {
@@ -133,6 +139,15 @@ export const updateFeeType = async (req, res) => {
             });
         }
 
+        // Capture old values
+        const oldValues = {
+            feeName: feeType.feeName,
+            unitPrice: feeType.unitPrice,
+            unit: feeType.unit,
+            description: feeType.description,
+            isActive: feeType.isActive
+        };
+
         await feeType.update({
             feeName,
             unitPrice,
@@ -141,9 +156,22 @@ export const updateFeeType = async (req, res) => {
             isActive: isActive !== undefined ? isActive : feeType.isActive
         });
 
+        // New values after update
+        const newValues = {
+            feeName,
+            unitPrice,
+            unit: unit || null,
+            description: description || null,
+            isActive: isActive !== undefined ? isActive : oldValues.isActive
+        };
+
         // Log update fee type activity
         await createLog(req.user.userId, LogActions.UPDATE_FEE_TYPE, EntityTypes.FEE_TYPE, id, 
-            { feeName: feeType.feeName, unitPrice: feeType.unitPrice }, req);
+            { 
+                feeName: feeType.feeName,
+                old_values: oldValues,
+                new_values: newValues
+            }, req);
 
         res.json(feeType);
     } catch (error) {
@@ -166,7 +194,13 @@ export const deleteFeeType = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy loại khoản thu' });
         }
 
-        const feeTypeData = { feeName: feeType.feeName, unitPrice: feeType.unitPrice };
+        const feeTypeData = {
+            feeName: feeType.feeName,
+            unitPrice: feeType.unitPrice,
+            unit: feeType.unit,
+            description: feeType.description,
+            isActive: feeType.isActive
+        };
 
         await feeType.destroy();
 

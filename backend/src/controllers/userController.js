@@ -95,7 +95,13 @@ export const createUser = async (req, res) => {
             LogActions.CREATE_USER, 
             EntityTypes.USER, 
             newUser.userId, 
-            { username: newUser.username, role: newUser.role },
+            { 
+                username: newUser.username,
+                email: newUser.email,
+                fullName: newUser.fullName,
+                role: newUser.role,
+                status: newUser.status
+            },
             req
         );
 
@@ -142,12 +148,38 @@ export const updateUser = async (req, res) => {
         }
 
         const updateData = {};
-        if (username) updateData.username = username;
-        if (email) updateData.email = email;
-        if (fullName) updateData.fullName = fullName;
-        if (password) updateData.passwordHash = await bcrypt.hash(password, 10);
-        if (role) updateData.role = role;
-        if (status) updateData.status = status;
+        const oldValues = {};
+        const newValues = {};
+        
+        if (username && username !== user.username) {
+            oldValues.username = user.username;
+            newValues.username = username;
+            updateData.username = username;
+        }
+        if (email && email !== user.email) {
+            oldValues.email = user.email;
+            newValues.email = email;
+            updateData.email = email;
+        }
+        if (fullName && fullName !== user.fullName) {
+            oldValues.fullName = user.fullName;
+            newValues.fullName = fullName;
+            updateData.fullName = fullName;
+        }
+        if (password) {
+            newValues.password = '***changed***';
+            updateData.passwordHash = await bcrypt.hash(password, 10);
+        }
+        if (role && role !== user.role) {
+            oldValues.role = user.role;
+            newValues.role = role;
+            updateData.role = role;
+        }
+        if (status && status !== user.status) {
+            oldValues.status = user.status;
+            newValues.status = status;
+            updateData.status = status;
+        }
 
         await user.update(updateData);
 
@@ -156,7 +188,12 @@ export const updateUser = async (req, res) => {
             LogActions.UPDATE_USER,
             EntityTypes.USER,
             id,
-            { updated_fields: Object.keys(updateData), username: user.username },
+            { 
+                username: user.username,
+                updated_fields: Object.keys(updateData),
+                old_values: oldValues,
+                new_values: newValues
+            },
             req
         );
 
@@ -189,7 +226,14 @@ export const deleteUser = async (req, res) => {
             return res.status(404).json({ message: "Không tìm thấy người dùng." });
         }
 
-        const username = user.username;
+        const userData = {
+            username: user.username,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role,
+            status: user.status
+        };
+        
         await user.destroy();
 
         await createLog(
@@ -197,7 +241,7 @@ export const deleteUser = async (req, res) => {
             LogActions.DELETE_USER,
             EntityTypes.USER,
             id,
-            { username },
+            userData,
             req
         );
 

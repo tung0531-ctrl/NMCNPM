@@ -116,17 +116,7 @@ const handleOnClick = async () => {
               </div>
             )}
 
-            <div className="border border-border rounded-lg p-8 hover:shadow-lg transition-shadow">
-              <h2 className="text-xl font-semibold mb-2">Test API</h2>
-              <p className="text-base text-muted-foreground mb-4">Kiểm tra kết nối API</p>
-              <Button 
-                onClick={handleOnClick} 
-                variant="outline"
-                className="w-full h-10 text-base"
-              >
-                Test
-              </Button>
-            </div>
+            
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ export interface Log {
     details: string | null;
     ipAddress: string | null;
     userAgent: string | null;
-    createdAt: string;
+    createdAt: string; // Should be ISO 8601 string from backend
     user?: {
         userId: number;
         username: string;
