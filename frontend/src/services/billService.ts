@@ -32,6 +32,11 @@ export interface BillsResponse {
     };
 }
 
+export const getMyBills = async (): Promise<Bill[]> => {
+    const response = await axios.get('/bills/my');
+    return response.data.bills;
+};
+
 export const getBills = async (filters?: BillFilters): Promise<BillsResponse> => {
     console.log('getBills called with filters:', filters);
     console.log('axios baseURL:', axios.defaults.baseURL);

@@ -1,29 +1,21 @@
 import express from 'express';
-import { getAllBills, createBill, updateBill, deleteBill } from '../controllers/billController.js';
+import { getAllBills, getBillsForResident, createBill, updateBill, deleteBill } from '../controllers/billController.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { adminOnly } from '../middlewares/adminMiddleware.js';
+import { residentOnly } from '../middlewares/residentMiddleware.js';
 
 const router = express.Router();
 
-// Apply authentication and admin check to all bill routes
+// Apply authentication to all bill routes
 router.use(protectedRoute);
-router.use(adminOnly);
 
-// Test route
-router.get('/test', (req, res) => {
-    res.json({ message: 'Bill route is working!' });
-});
+// Resident scope
+router.get('/my', residentOnly, getBillsForResident);
 
-// Route to get all bills
-router.get('/', getAllBills);
-
-// Route to create a new bill
-router.post('/', createBill);
-
-// Route to update a bill
-router.put('/:id', updateBill);
-
-// Route to delete a bill
-router.delete('/:id', deleteBill);
+// Admin scope
+router.get('/', adminOnly, getAllBills);
+router.post('/', adminOnly, createBill);
+router.put('/:id', adminOnly, updateBill);
+router.delete('/:id', adminOnly, deleteBill);
 
 export default router;

@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+    getResidentsForCurrentHousehold,
     getAllResidentsForAdmin,
     getResidentById,
     createResident,
@@ -8,25 +9,26 @@ import {
 } from '../controllers/residentController.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { adminOnly } from '../middlewares/adminMiddleware.js';
+import { residentOnly } from '../middlewares/residentMiddleware.js';
 
 const router = express.Router();
 
-// Apply adminOnly middleware to all routes (protectedRoute is applied at server level)
-router.use(adminOnly);
+// Resident self-scope
+router.get('/my', residentOnly, getResidentsForCurrentHousehold);
 
-// Get all residents with filtering
-router.get('/', getAllResidentsForAdmin);
+// Admin-only routes
+router.get('/', adminOnly, getAllResidentsForAdmin);
 
 // Get resident by ID
-router.get('/:id', getResidentById);
+router.get('/:id', adminOnly, getResidentById);
 
 // Create resident
-router.post('/', createResident);
+router.post('/', adminOnly, createResident);
 
 // Update resident
-router.put('/:id', updateResident);
+router.put('/:id', adminOnly, updateResident);
 
 // Delete resident
-router.delete('/:id', deleteResident);
+router.delete('/:id', adminOnly, deleteResident);
 
 export default router;

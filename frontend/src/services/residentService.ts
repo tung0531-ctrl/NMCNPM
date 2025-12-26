@@ -58,6 +58,11 @@ export interface UpdateResidentData {
     isStaying?: boolean;
 }
 
+export const getResidentsForCurrentUser = async (): Promise<Resident[]> => {
+    const response = await apiClient.get('/residents/my');
+    return response.data.residents;
+};
+
 export const getAllResidentsForAdmin = async (filters: ResidentFilters = {}): Promise<ResidentResponse> => {
     const params = new URLSearchParams();
 

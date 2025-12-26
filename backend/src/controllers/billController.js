@@ -46,9 +46,9 @@ export const getAllBills = async (req, res) => {
         const offset = (page - 1) * limit;
 
         // Get search filters from query string
-        const { bill_id,householdName, paymentPeriod, status, collectorName } = req.query;
+        const { billId, householdName, paymentPeriod, status, collectorName } = req.query;
         
-        console.log('Filters:', { bill_id,householdName, paymentPeriod, status, collectorName });
+        console.log('Filters:', { billId, householdName, paymentPeriod, status, collectorName });
 
         // Build where clause for bills table
         const billWhere = {};
@@ -75,8 +75,11 @@ export const getAllBills = async (req, res) => {
         // No database-level filtering for status
         
         // Filter by bill ID - exact match by number
-        if (bill_id) {
-            billWhere.billId = parseInt(bill_id);
+        if (billId) {
+            const parsedBillId = parseInt(billId);
+            if (!isNaN(parsedBillId)) {
+                billWhere.billId = parsedBillId;
+            }
         }
 
         // Filter by household name
@@ -176,7 +179,7 @@ export const getAllBills = async (req, res) => {
         
         // Log view all bills activity
         await createLog(req.user.userId, LogActions.VIEW_ALL_BILLS, EntityTypes.BILL, null, 
-            { count: finalBills.length, filters: { bill_id, householdName, paymentPeriod, status } }, req);
+            { count: finalBills.length, filters: { billId, householdName, paymentPeriod, status } }, req);
         
         res.status(200).json({
             bills: finalBills,
@@ -490,6 +493,71 @@ export const deleteBill = async (req, res) => {
         res.status(200).json({ message: 'Bill deleted successfully' });
     } catch (error) {
         console.error('Error deleting bill:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+// Lấy danh sách hóa đơn dành cho cư dân theo hộ gia đình của họ
+export const getBillsForResident = async (req, res) => {
+    try {
+        const householdId = req.user?.householdId;
+
+        if (!householdId) {
+            return res.status(403).json({ message: 'Tài khoản chưa được gán hộ gia đình' });
+        }
+
+        const bills = await Bill.findAll({
+            where: { householdId },
+            include: [
+                {
+                    model: Household,
+                    as: 'household_bill',
+                    attributes: ['ownerName', 'householdCode', 'address'],
+                    required: true
+                },
+                {
+                    model: User,
+                    as: 'Collector',
+                    attributes: ['fullName', 'username'],
+                    required: false
+                }
+            ],
+            order: [['billingPeriod', 'DESC']]
+        });
+
+        const transformedBills = bills.map(bill => {
+            const data = bill.toJSON();
+            const displayStatus = calculatePaymentStatus(
+                data.totalAmount,
+                data.paidAmount,
+                data.billingPeriod
+            );
+
+            return {
+                billId: data.billId,
+                householdName: data.household_bill?.ownerName || '',
+                title: data.title,
+                totalAmount: data.totalAmount,
+                paidAmount: data.paidAmount,
+                paymentPeriod: new Date(data.billingPeriod).toISOString().slice(0, 7),
+                status: displayStatus,
+                collectorName: data.Collector?.fullName || null,
+                createdAt: data.createdAt
+            };
+        });
+
+        await createLog(
+            req.user.userId,
+            LogActions.VIEW_ALL_BILLS,
+            EntityTypes.BILL,
+            null,
+            { scope: 'resident', householdId },
+            req
+        );
+
+        res.status(200).json({ bills: transformedBills });
+    } catch (error) {
+        console.error('Error fetching resident bills:', error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };

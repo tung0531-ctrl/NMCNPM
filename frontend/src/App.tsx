@@ -6,6 +6,9 @@ import BillManagementPage from './pages/BillManagementPage';
 import FeeTypeManagementPage from './pages/FeeTypeManagementPage';
 import HouseholdManagementPage from './pages/HouseholdManagementPage';
 import ResidentManagementPage from './pages/ResidentManagementPage';
+import MyBillsPage from './pages/MyBillsPage';
+import MyHouseholdPage from './pages/MyHouseholdPage';
+import MyResidentsPage from './pages/MyResidentsPage';
 import UserManagementPage from './pages/UserManagementPage';
 import LogViewerPage from './pages/LogViewerPage';
 import StatisticsPage from './pages/StatisticsPage';
@@ -43,6 +46,18 @@ function App() {
     <Route
       path = '/'
       element = {<ChatAppPage/>}
+      />
+    <Route
+      path = '/my/bills'
+      element = {<MyBillsPage/>}
+      />
+    <Route
+      path = '/my/household'
+      element = {<MyHouseholdPage/>}
+      />
+    <Route
+      path = '/my/residents'
+      element = {<MyResidentsPage/>}
       />
     <Route
       path = '/bills'

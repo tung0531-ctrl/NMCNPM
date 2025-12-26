@@ -90,6 +90,30 @@ const isAdmin = user?.role === 'ADMIN';
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
+    {
+      title: 'Khoản Thu Của Tôi',
+      description: 'Xem hóa đơn và trạng thái thanh toán của hộ',
+      icon: Receipt,
+      path: '/my/bills',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      title: 'Hộ Gia Đình Của Tôi',
+      description: 'Xem thông tin hộ gia đình được gán',
+      icon: Home,
+      path: '/my/household',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+    },
+    {
+      title: 'Nhân Khẩu Trong Hộ',
+      description: 'Xem danh sách cư dân thuộc hộ của bạn',
+      icon: Users,
+      path: '/my/residents',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
   ];
 
   const menuItems = isAdmin ? adminMenuItems : residentMenuItems;

@@ -5,6 +5,45 @@ import { createLog, LogActions, EntityTypes } from '../utils/logger.js';
 // Get all households
 export const getAllHouseholds = async (req, res) => {
     try {
+        if (req.user?.role === 'RESIDENT') {
+            const householdId = req.user.householdId;
+
+            if (!householdId) {
+                return res.status(403).json({
+                    message: 'Tài khoản chưa được gán vào hộ gia đình'
+                });
+            }
+
+            const household = await Household.findByPk(householdId);
+
+            if (!household) {
+                return res.status(404).json({ message: 'Không tìm thấy hộ gia đình' });
+            }
+
+            await createLog(
+                req.user.userId,
+                LogActions.VIEW_HOUSEHOLD,
+                EntityTypes.HOUSEHOLD,
+                household.householdId,
+                { scope: 'resident' },
+                req
+            );
+
+            return res.status(200).json({
+                households: [
+                    {
+                        householdId: household.householdId,
+                        ownerName: household.ownerName,
+                        householdCode: household.householdCode,
+                        address: household.address,
+                        areaSqm: household.areaSqm,
+                        userId: household.userId,
+                        createdAt: household.createdAt
+                    }
+                ]
+            });
+        }
+
         const households = await Household.findAll({
             order: [['ownerName', 'ASC']]
         });

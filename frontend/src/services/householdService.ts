@@ -49,6 +49,11 @@ export const getAllHouseholds = async (): Promise<Household[]> => {
     return response.data.households;
 };
 
+export const getMyHousehold = async (): Promise<Household | null> => {
+    const households = await getAllHouseholds();
+    return households[0] || null;
+};
+
 export const getAllHouseholdsForAdmin = async (filters: HouseholdFilters): Promise<HouseholdResponse> => {
     const response = await apiClient.get('/households/admin', { params: filters });
     return response.data;

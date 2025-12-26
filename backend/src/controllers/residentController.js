@@ -2,6 +2,41 @@ import { Resident, Household } from '../models/index.js';
 import { Op } from 'sequelize';
 import { createLog, LogActions, EntityTypes } from '../utils/logger.js';
 
+// Lấy danh sách cư dân theo hộ của tài khoản cư dân
+export const getResidentsForCurrentHousehold = async (req, res) => {
+    try {
+        const householdId = req.user?.householdId;
+
+        if (!householdId) {
+            return res.status(403).json({ message: 'Tài khoản chưa được gán vào hộ gia đình' });
+        }
+
+        const residents = await Resident.findAll({
+            where: { householdId },
+            include: [{
+                model: Household,
+                as: 'household_resident',
+                attributes: ['householdId', 'householdCode', 'ownerName', 'address']
+            }],
+            order: [['fullName', 'ASC']]
+        });
+
+        await createLog(
+            req.user.userId,
+            LogActions.VIEW_ALL_RESIDENTS,
+            EntityTypes.RESIDENT,
+            null,
+            { scope: 'resident', householdId },
+            req
+        );
+
+        res.status(200).json({ residents });
+    } catch (error) {
+        console.error('Error fetching residents for household:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 // Get all residents with filtering for admin
 export const getAllResidentsForAdmin = async (req, res) => {
     try {
