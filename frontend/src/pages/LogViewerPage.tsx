@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { logService } from "../services/logService";
 import type { Log, GetLogsParams } from "../services/logService";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";import { useNavigate } from "react-router";
@@ -26,7 +26,7 @@ const LogViewerPage = () => {
       console.log('Logs received:', data);
       console.log('First log ALL fields:', data.logs[0]);
       console.log('First log createdAt:', data.logs[0]?.createdAt, typeof data.logs[0]?.createdAt);
-      console.log('First log created_at:', data.logs[0]?.created_at, typeof data.logs[0]?.created_at);
+      console.log('First log createdAt:', data.logs[0]?.createdAt, typeof data.logs[0]?.createdAt);
       setLogs(data.logs);
       setTotalPages(data.totalPages);
       setTotal(data.total);

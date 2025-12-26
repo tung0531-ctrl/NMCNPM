@@ -10,6 +10,7 @@ import HouseholdManagementPage from './pages/HouseholdManagementPage';
 import ResidentManagementPage from './pages/ResidentManagementPage';
 import UserManagementPage from './pages/UserManagementPage';
 import LogViewerPage from './pages/LogViewerPage';
+import StatisticsPage from './pages/StatisticsPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -89,6 +90,14 @@ function App() {
       element = {
         <AdminRoute>
           <LogViewerPage/>
+        </AdminRoute>
+      }
+      />
+    <Route
+      path = '/statistics'
+      element = {
+        <AdminRoute>
+          <StatisticsPage/>
         </AdminRoute>
       }
       />

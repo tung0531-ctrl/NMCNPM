@@ -572,6 +572,7 @@ const UserManagementPage = () => {
               <Label htmlFor="create-role" className="text-base">Vai trò</Label>
               <select
                 id="create-role"
+                aria-label="Chọn vai trò người dùng"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.role}
                 onChange={(e) =>
@@ -586,6 +587,7 @@ const UserManagementPage = () => {
               <Label htmlFor="create-status" className="text-base">Trạng thái</Label>
               <select
                 id="create-status"
+                aria-label="Chọn trạng thái tài khoản"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.status}
                 onChange={(e) =>
@@ -677,6 +679,7 @@ const UserManagementPage = () => {
               <Label htmlFor="edit-role" className="text-base">Vai trò</Label>
               <select
                 id="edit-role"
+                aria-label="Chọn vai trò người dùng"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.role}
                 onChange={(e) =>
@@ -691,6 +694,7 @@ const UserManagementPage = () => {
               <Label htmlFor="edit-status" className="text-base">Trạng thái</Label>
               <select
                 id="edit-status"
+                aria-label="Chọn trạng thái tài khoản"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.status}
                 onChange={(e) =>

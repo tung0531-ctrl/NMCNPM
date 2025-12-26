@@ -110,7 +110,7 @@ export const getAllBills = async (req, res) => {
                 },
                 {
                     model: User,
-                    as: 'collector',
+                    as: 'Collector',
                     attributes: ['fullName', 'username'],
                     where: Object.keys(collectorWhere).length > 0 ? collectorWhere : undefined,
                     required: false
@@ -154,7 +154,7 @@ export const getAllBills = async (req, res) => {
                 paidAmount: billData.paidAmount,
                 paymentPeriod: new Date(billData.billingPeriod).toISOString().slice(0, 7),
                 status: displayStatus,
-                collectorName: billData.collector?.fullName || null,
+                collectorName: billData.Collector?.fullName || null,
                 createdAt: billData.createdAt
             };
         }).filter(bill => bill !== null);
@@ -211,7 +211,7 @@ export const updateBill = async (req, res) => {
                 },
                 {
                     model: User,
-                    as: 'collector',
+                    as: 'Collector',
                     attributes: ['fullName']
                 }
             ]
@@ -291,7 +291,7 @@ export const updateBill = async (req, res) => {
                 },
                 {
                     model: User,
-                    as: 'collector',
+                    as: 'Collector',
                     attributes: ['fullName']
                 }
             ]
@@ -335,7 +335,7 @@ export const updateBill = async (req, res) => {
             paidAmount: billData.paidAmount,
             paymentPeriod: new Date(billData.billingPeriod).toISOString().slice(0, 7),
             status: displayStatus,
-            collectorName: billData.collector?.fullName || null,
+            collectorName: billData.Collector?.fullName || null,
             createdAt: billData.createdAt
         });
     } catch (error) {
@@ -406,7 +406,7 @@ export const createBill = async (req, res) => {
                 },
                 {
                     model: User,
-                    as: 'collector',
+                    as: 'Collector',
                     attributes: ['fullName']
                 }
             ]
@@ -443,7 +443,7 @@ export const createBill = async (req, res) => {
             paidAmount: billData.paidAmount,
             paymentPeriod: new Date(billData.billingPeriod).toISOString().slice(0, 7),
             status: displayStatus,
-            collectorName: billData.collector?.fullName || null,
+            collectorName: billData.Collector?.fullName || null,
             createdAt: billData.createdAt
         });
     } catch (error) {

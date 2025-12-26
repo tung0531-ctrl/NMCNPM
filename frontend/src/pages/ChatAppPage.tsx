@@ -1,8 +1,6 @@
 import Logout from '@/components/auth/Logout'
 import { Button } from '@/components/ui/button';
-import api from '@/lib/axios';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { toast } from 'sonner';
 import { useNavigate } from 'react-router';
 
 
@@ -12,15 +10,6 @@ const user = useAuthStore((s) => s.user);
 const navigate = useNavigate();
 const isAdmin = user?.role === 'ADMIN';
 
-const handleOnClick = async () => {
-  try {
-    await api.get("/users/test", {withCredentials: true});
-    toast.success("Test thành công. Hãy kiểm tra console để biết chi tiết");
-  } catch (error) {
-    toast.error("thất bại");
-    console.error(error);
-  }
-}
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 -z-10 bg-gradient-purple" />
@@ -112,6 +101,19 @@ const handleOnClick = async () => {
                   className="w-full h-10 text-base"
                 >
                   Truy cập Xem Log
+                </Button>
+              </div>
+            )}
+
+            {isAdmin && (
+              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">Thống Kê Doanh Thu</h2>
+                <p className="text-base text-muted-foreground mb-4">Xem thống kê và biểu đồ doanh thu</p>
+                <Button 
+                  onClick={() => navigate('/statistics')} 
+                  className="w-full h-10 text-base"
+                >
+                  Truy cập Thống Kê
                 </Button>
               </div>
             )}

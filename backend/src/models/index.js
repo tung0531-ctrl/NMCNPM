@@ -3,6 +3,7 @@ import Household from './Household.js';
 import User from './User.js';
 import Resident from './Resident.js';
 import Log from './Log.js';
+import FeeType from './FeeType.js';
 
 // Define associations
 Bill.belongsTo(Household, {
@@ -12,7 +13,11 @@ Bill.belongsTo(Household, {
 
 Bill.belongsTo(User, {
     foreignKey: 'collectorId',
-    as: 'collector'
+    as: 'Collector'
+});
+
+Bill.belongsTo(FeeType, {
+    foreignKey: 'feeTypeId',
 });
 
 Household.hasMany(Bill, {
@@ -23,6 +28,10 @@ Household.hasMany(Bill, {
 User.hasMany(Bill, {
     foreignKey: 'collectorId',
     as: 'collectedBills'
+});
+
+FeeType.hasMany(Bill, {
+    foreignKey: 'feeTypeId',
 });
 
 Resident.belongsTo(Household, {
@@ -46,4 +55,4 @@ User.hasMany(Log, {
     as: 'logs'
 });
 
-export { Bill, Household, User, Resident, Log };
+export { Bill, Household, User, Resident, Log, FeeType };

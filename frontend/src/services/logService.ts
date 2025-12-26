@@ -49,7 +49,7 @@ export const logService = {
 
     // Get log statistics
     getLogStats: async (startDate?: string, endDate?: string): Promise<LogStatsResponse> => {
-        const params: any = {};
+        const params: Record<string, string> = {};
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
         
