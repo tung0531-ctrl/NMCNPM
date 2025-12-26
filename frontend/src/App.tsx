@@ -1,5 +1,3 @@
-// đang làm giống hệt theo ứng dụng ChatApp nên có một số đoạn không cần thiết phải xóa đi, thêm sửa
-
 import {BrowserRouter, Route, Routes} from 'react-router'
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
@@ -11,6 +9,7 @@ import ResidentManagementPage from './pages/ResidentManagementPage';
 import UserManagementPage from './pages/UserManagementPage';
 import LogViewerPage from './pages/LogViewerPage';
 import StatisticsPage from './pages/StatisticsPage';
+import ProfilePage from './pages/ProfilePage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -100,6 +99,10 @@ function App() {
           <StatisticsPage/>
         </AdminRoute>
       }
+      />
+    <Route
+      path = '/profile'
+      element = {<ProfilePage/>}
       />
     </Route>
   </Routes>

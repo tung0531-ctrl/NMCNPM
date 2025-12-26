@@ -20,7 +20,16 @@ const isAdmin = user?.role === 'ADMIN';
               <h1 className="text-3xl font-bold mb-2">Trang Chủ</h1>
               <p className="text-base text-muted-foreground">Xin chào, {user?.username || 'User'}</p>
             </div>
-            <Logout/>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/profile')} 
+                className="h-10 text-base"
+              >
+                Thông tin cá nhân
+              </Button>
+              <Logout/>
+            </div>
           </div>
 
 
@@ -94,19 +103,6 @@ const isAdmin = user?.role === 'ADMIN';
 
             {isAdmin && (
               <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
-                <h2 className="text-xl font-semibold mb-2">Xem Log Hoạt Động</h2>
-                <p className="text-base text-muted-foreground mb-4">Xem lịch sử hoạt động hệ thống</p>
-                <Button 
-                  onClick={() => navigate('/logs')} 
-                  className="w-full h-10 text-base"
-                >
-                  Truy cập Xem Log
-                </Button>
-              </div>
-            )}
-
-            {isAdmin && (
-              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
                 <h2 className="text-xl font-semibold mb-2">Thống Kê Doanh Thu</h2>
                 <p className="text-base text-muted-foreground mb-4">Xem thống kê và biểu đồ doanh thu</p>
                 <Button 
@@ -118,7 +114,19 @@ const isAdmin = user?.role === 'ADMIN';
               </div>
             )}
 
-            
+            {isAdmin && (
+              <div className="border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <h2 className="text-xl font-semibold mb-2">Xem Log Hoạt Động</h2>
+                <p className="text-base text-muted-foreground mb-4">Xem lịch sử hoạt động hệ thống</p>
+                <Button 
+                  onClick={() => navigate('/logs')} 
+                  className="w-full h-10 text-base"
+                >
+                  Truy cập Xem Log
+                </Button>
+              </div>
+            )}
+
           </div>
         </div>
       </div>

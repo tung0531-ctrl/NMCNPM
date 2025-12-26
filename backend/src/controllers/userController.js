@@ -251,3 +251,51 @@ export const deleteUser = async (req, res) => {
         return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
     }
 };
+
+// Update own password (for all users)
+export const updateOwnPassword = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới." });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+        }
+
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "Không tìm thấy người dùng." });
+        }
+
+        // Verify current password
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Mật khẩu hiện tại không đúng." });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.passwordHash = hashedPassword;
+        await user.save();
+
+        await createLog(
+            userId,
+            LogActions.UPDATE_USER,
+            EntityTypes.USER,
+            userId,
+            { action: 'change_password' },
+            req
+        );
+
+        return res.status(200).json({ message: "Đổi mật khẩu thành công." });
+    } catch (error) {
+        console.error("Lỗi đổi mật khẩu:", error);
+        return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+    }
+};

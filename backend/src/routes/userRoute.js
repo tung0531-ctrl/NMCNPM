@@ -5,13 +5,15 @@ import {
     getUserById, 
     createUser, 
     updateUser, 
-    deleteUser 
+    deleteUser,
+    updateOwnPassword
 } from "../controllers/userController.js"
 import { adminOnly } from "../middlewares/adminMiddleware.js"
 
 const router = express.Router()
 
 router.get('/me', authMe)
+router.put('/me/password', updateOwnPassword)
 
 // Admin only routes
 router.get('/', adminOnly, getAllUsers)
