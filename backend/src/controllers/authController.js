@@ -181,9 +181,13 @@ export const signIn = async (req, res) => {
             maxAge: REFRESH_TOKEN_TTL
         });
 
-        // Log login activity
-        await createLog(user.userId, LogActions.LOGIN, EntityTypes.USER, user.userId, 
-            { username: user.username, role: user.role }, req);
+        // Log login activity - wrap in try-catch to prevent blocking login
+        try {
+            await createLog(user.userId, LogActions.LOGIN, EntityTypes.USER, user.userId, 
+                { username: user.username, role: user.role }, req);
+        } catch (logError) {
+            console.error("Error creating login log (non-blocking):", logError);
+        }
 
         // trả access token
         return res.status(200).json({
@@ -192,9 +196,11 @@ export const signIn = async (req, res) => {
         });
     } catch (error) {
         console.error("Lỗi signIn:", error);
+        console.error("Stack trace:", error.stack);
         return res.status(500).json({
             success: false,
-            message: "Lỗi máy chủ nội bộ."
+            message: "Lỗi máy chủ nội bộ.",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };

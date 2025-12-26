@@ -7,6 +7,13 @@ export interface User {
     fullName: string;
     role: 'ADMIN' | 'RESIDENT';
     status: 'ACTIVE' | 'LOCKED';
+    householdId?: number | null;
+    household?: {
+        householdId: number;
+        householdCode: string;
+        ownerName: string;
+        address: string;
+    } | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -18,6 +25,7 @@ export interface CreateUserData {
     password: string;
     role?: 'ADMIN' | 'RESIDENT';
     status?: 'ACTIVE' | 'LOCKED';
+    householdId?: number | null;
 }
 
 export interface UpdateUserData {
@@ -27,6 +35,7 @@ export interface UpdateUserData {
     password?: string;
     role?: 'ADMIN' | 'RESIDENT';
     status?: 'ACTIVE' | 'LOCKED';
+    householdId?: number | null;
 }
 
 export const userService = {

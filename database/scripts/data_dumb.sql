@@ -1,7 +1,7 @@
 USE BlueMoon;
 
 -- =============================================
--- 1. INSERT DATA: USERS
+-- 1. INSERT DATA: USERS (Chưa có household_id)
 -- =============================================
 INSERT INTO users (username, password_hash, full_name, email, role, status) VALUES
 ('admin_thanh', 'hash1', 'Nguyễn Văn Thành', 'thanh.bql@bluemoon.vn', 'ADMIN', 'ACTIVE'),
@@ -48,6 +48,25 @@ INSERT INTO households (household_code, owner_name, address, area_sqm, user_id) 
 ('BM_503', 'Nguyễn Văn C', 'Tầng 5 - Căn 503', 65.0, NULL),
 ('BM_504', 'Phạm Văn D', 'Tầng 5 - Căn 504', 110.0, NULL),
 ('BM_601', 'Hoàng Văn E', 'Tầng 6 - Căn 601', 75.0, NULL);
+
+-- =============================================
+-- UPDATE: Gán household_id cho users
+-- =============================================
+UPDATE users SET household_id = 1 WHERE user_id = 6;  -- user_hien -> BM_101
+UPDATE users SET household_id = 2 WHERE user_id = 7;  -- user_minh -> BM_102
+UPDATE users SET household_id = 3 WHERE user_id = 8;  -- user_tuan -> BM_103
+UPDATE users SET household_id = 4 WHERE user_id = 9;  -- user_linh -> BM_104
+UPDATE users SET household_id = 5 WHERE user_id = 10; -- user_son -> BM_201
+UPDATE users SET household_id = 6 WHERE user_id = 11; -- user_mai -> BM_202
+UPDATE users SET household_id = 7 WHERE user_id = 12; -- user_duong -> BM_203
+UPDATE users SET household_id = 8 WHERE user_id = 13; -- user_anh -> BM_204
+UPDATE users SET household_id = 9 WHERE user_id = 14; -- user_quynh -> BM_301
+UPDATE users SET household_id = 10 WHERE user_id = 15; -- user_nam -> BM_302
+UPDATE users SET household_id = 11 WHERE user_id = 16; -- user_trang -> BM_303
+UPDATE users SET household_id = 12 WHERE user_id = 17; -- user_phuc -> BM_304
+UPDATE users SET household_id = 13 WHERE user_id = 18; -- user_tam -> BM_401
+UPDATE users SET household_id = 14 WHERE user_id = 19; -- user_kien -> BM_402
+UPDATE users SET household_id = 15 WHERE user_id = 20; -- user_vy -> BM_403
 
 -- =============================================
 -- 3. INSERT DATA: RESIDENTS

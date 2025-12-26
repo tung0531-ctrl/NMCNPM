@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuthStore } from '../stores/useAuthStore';
 import { Card, CardContent } from '../components/ui/card';
@@ -45,8 +45,9 @@ const ProfilePage = () => {
       toast.success('Đổi mật khẩu thành công');
       setShowPasswordDialog(false);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Lỗi đổi mật khẩu');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Lỗi đổi mật khẩu');
     } finally {
       setLoading(false);
     }
@@ -140,7 +141,7 @@ const ProfilePage = () => {
                           <Label htmlFor="status" className="text-base">Trạng thái</Label>
                           <Input
                             id="status"
-                            value={user.status === 'ACTIVE' ? 'Hoạt động' : 'Bị khóa'}
+                            value={(user as { status?: string })?.status === 'ACTIVE' ? 'Hoạt động' : 'Bị khóa'}
                             disabled
                             className="h-10 text-base bg-muted"
                           />

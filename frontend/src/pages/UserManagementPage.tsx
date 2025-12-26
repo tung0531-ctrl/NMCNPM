@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { userService } from "../services/userService";
 import type { User, CreateUserData, UpdateUserData } from "../services/userService";
+import { getAllHouseholds, type Household } from "../services/householdService";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -29,6 +30,7 @@ import {
 const UserManagementPage = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
+  const [households, setHouseholds] = useState<Household[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] = useState({
@@ -56,11 +58,23 @@ const UserManagementPage = () => {
     password: "",
     role: "RESIDENT",
     status: "ACTIVE",
+    householdId: null,
   });
 
   useEffect(() => {
     fetchUsers();
+    fetchHouseholds();
   }, []);
+
+  const fetchHouseholds = async () => {
+    try {
+      const data = await getAllHouseholds();
+      setHouseholds(data);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Lỗi khi tải danh sách hộ gia đình");
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     fetchUsers(newPage, pagination.itemsPerPage, searchTerm);
@@ -144,6 +158,7 @@ const UserManagementPage = () => {
     if (formData.password) updateData.password = formData.password;
     if (formData.role !== selectedUser.role) updateData.role = formData.role;
     if (formData.status !== selectedUser.status) updateData.status = formData.status;
+    if (formData.householdId !== selectedUser.householdId) updateData.householdId = formData.householdId;
 
     try {
       await userService.updateUser(selectedUser.userId, updateData);
@@ -181,6 +196,7 @@ const UserManagementPage = () => {
       password: "",
       role: user.role,
       status: user.status,
+      householdId: user.householdId || null,
     });
     setIsEditDialogOpen(true);
   };
@@ -198,6 +214,7 @@ const UserManagementPage = () => {
       password: "",
       role: "RESIDENT",
       status: "ACTIVE",
+      householdId: null,
     });
     setSelectedUser(null);
   };
@@ -272,6 +289,7 @@ const UserManagementPage = () => {
                           <th className="px-4 py-3 text-left text-base font-semibold">Email</th>
                           <th className="px-4 py-3 text-left text-base font-semibold">Họ tên</th>
                           <th className="px-4 py-3 text-left text-base font-semibold">Vai trò</th>
+                          <th className="px-4 py-3 text-left text-base font-semibold">Hộ gia đình</th>
                           <th className="px-4 py-3 text-left text-base font-semibold">Trạng thái</th>
                           <th className="px-4 py-3 text-center text-base font-semibold">Hành động</th>
                         </tr>
@@ -279,13 +297,13 @@ const UserManagementPage = () => {
                       <tbody className="divide-y divide-border">
                         {loading ? (
                           <tr>
-                            <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                            <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                               Đang tải...
                             </td>
                           </tr>
                         ) : users.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                            <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                               Không tìm thấy người dùng nào
                             </td>
                           </tr>
@@ -306,6 +324,16 @@ const UserManagementPage = () => {
                                 >
                                   {user.role}
                                 </span>
+                              </td>
+                              <td className="px-4 py-3 text-base">
+                                {user.household ? (
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-sm">{user.household.householdCode}</span>
+                                    <span className="text-xs text-muted-foreground">{user.household.ownerName}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm italic">Chưa gán</span>
+                                )}
                               </td>
                               <td className="px-4 py-3 text-base">
                                 <span
@@ -598,6 +626,28 @@ const UserManagementPage = () => {
                 <option value="LOCKED">LOCKED</option>
               </select>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="create-household" className="text-base">Hộ gia đình</Label>
+              <select
+                id="create-household"
+                aria-label="Chọn hộ gia đình"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={formData.householdId || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, householdId: e.target.value ? Number(e.target.value) : null })
+                }
+              >
+                <option value="">-- Không gán hộ gia đình --</option>
+                {households
+                  .filter(h => !users.some(u => u.householdId === h.householdId))
+                  .map((household) => (
+                    <option key={household.householdId} value={household.householdId}>
+                      {household.householdCode} - {household.ownerName}
+                    </option>
+                  ))}
+              </select>
+              <p className="text-xs text-muted-foreground">Chỉ hiển thị các hộ gia đình chưa được gán cho người dùng khác</p>
+            </div>
           </div>
           <DialogFooter>
             <Button 
@@ -704,6 +754,28 @@ const UserManagementPage = () => {
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="LOCKED">LOCKED</option>
               </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-household" className="text-base">Hộ gia đình</Label>
+              <select
+                id="edit-household"
+                aria-label="Chọn hộ gia đình"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={formData.householdId || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, householdId: e.target.value ? Number(e.target.value) : null })
+                }
+              >
+                <option value="">-- Không gán hộ gia đình --</option>
+                {households
+                  .filter(h => !users.some(u => u.householdId === h.householdId && u.userId !== selectedUser?.userId))
+                  .map((household) => (
+                    <option key={household.householdId} value={household.householdId}>
+                      {household.householdCode} - {household.ownerName}
+                    </option>
+                  ))}
+              </select>
+              <p className="text-xs text-muted-foreground">Chỉ hiển thị các hộ gia đình chưa được gán cho người dùng khác</p>
             </div>
           </div>
           <DialogFooter>

@@ -49,6 +49,11 @@ const User = sequelize.define("User", {
         type: DataTypes.ENUM("ACTIVE", "LOCKED"),
         defaultValue: "ACTIVE",
         field: "status",
+    },
+    householdId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: "household_id",
     }
 }, {
     tableName: "users",

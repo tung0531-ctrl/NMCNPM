@@ -3,9 +3,9 @@ export interface User {
     username: string;
     email: string;
     fullName: string;
-    role: 'RESIDENT' | 'ADMIN';  // Updated to match backend enum
+    role: 'RESIDENT' | 'ADMIN';
+    status?: 'ACTIVE' | 'LOCKED';
     phone?: string;
     createdAt?: string;
     updatedAt?: string;
-
 }

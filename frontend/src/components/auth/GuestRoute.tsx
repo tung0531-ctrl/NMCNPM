@@ -33,7 +33,8 @@ const GuestRoute = ({ children }: GuestRouteProps) => {
         };
 
         init();
-    }, [accessToken, user, refresh, fetchMe]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Đang kiểm tra hoặc đang loading
     if (checking || loading) {

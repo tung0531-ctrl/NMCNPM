@@ -1,5 +1,6 @@
--- Tạo database
-CREATE DATABASE IF NOT EXISTS BlueMoon;
+-- Xóa database cũ và tạo mới
+DROP DATABASE IF EXISTS BlueMoon;
+CREATE DATABASE BlueMoon;
 USE BlueMoon;
 
 -- =============================================
@@ -17,6 +18,7 @@ CREATE TABLE users (
     -- Chỉ giữ lại ADMIN (BQL) và RESIDENT (Cư dân)
     role ENUM('ADMIN', 'RESIDENT') NOT NULL DEFAULT 'RESIDENT',
     status ENUM('ACTIVE', 'LOCKED') DEFAULT 'ACTIVE',
+    household_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -155,6 +157,15 @@ CREATE INDEX idx_resident_search ON residents(full_name, identity_card_number);
 CREATE INDEX idx_bills_household_id ON bills(household_id);
 CREATE INDEX idx_bills_fee_status ON bills(fee_type_id, payment_status);
 CREATE INDEX idx_bills_period_status ON bills(billing_period, payment_status);
+
+-- =============================================
+-- FOREIGN KEY: users -> households
+-- =============================================
+ALTER TABLE users
+ADD CONSTRAINT fk_users_household
+FOREIGN KEY (household_id) REFERENCES households(household_id) ON DELETE SET NULL;
+
+CREATE INDEX idx_users_household_id ON users(household_id);
 
 -- =============================================
 -- 6. BẢNG LOGS (Nhật ký hoạt động chi tiết)

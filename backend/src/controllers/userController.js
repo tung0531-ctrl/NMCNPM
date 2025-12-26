@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Household from "../models/Household.js";
 import bcrypt from "bcrypt";
 import { sequelize } from "../libs/db.js";
 import { Op } from "sequelize";
@@ -20,6 +21,11 @@ export const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
             attributes: { exclude: ['passwordHash'] },
+            include: [{
+                model: Household,
+                as: 'household',
+                attributes: ['householdId', 'householdCode', 'ownerName', 'address']
+            }],
             order: [['createdAt', 'DESC']]
         });
 
@@ -32,7 +38,12 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
-// Get user by ID
+// Get user by ID,
+            include: [{
+                model: Household,
+                as: 'household',
+                attributes: ['householdId', 'householdCode', 'ownerName', 'address']
+            }]
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -56,7 +67,7 @@ export const getUserById = async (req, res) => {
 // Create new user
 export const createUser = async (req, res) => {
     try {
-        const { username, email, fullName, password, role, status } = req.body;
+        const { username, email, fullName, password, role, status, householdId } = req.body;
 
         // Validate required fields
         if (!username || !email || !fullName || !password) {
@@ -77,6 +88,17 @@ export const createUser = async (req, res) => {
             return res.status(400).json({ message: "Tên đăng nhập hoặc email đã tồn tại." });
         }
 
+        // If householdId provided, check if it's already linked to another user
+        if (householdId) {
+            const householdInUse = await User.findOne({
+                where: { householdId }
+            });
+            
+            if (householdInUse) {
+                return res.status(400).json({ message: "Hộ gia đình này đã được gán cho người dùng khác." });
+            }
+        }
+
         // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
 
@@ -87,7 +109,8 @@ export const createUser = async (req, res) => {
             fullName,
             passwordHash,
             role: role || 'RESIDENT',
-            status: status || 'ACTIVE'
+            status: status || 'ACTIVE',
+            householdId: householdId || null
         });
 
         await createLog(
@@ -100,7 +123,8 @@ export const createUser = async (req, res) => {
                 email: newUser.email,
                 fullName: newUser.fullName,
                 role: newUser.role,
-                status: newUser.status
+                status: newUser.status,
+                householdId: newUser.householdId
             },
             req
         );
@@ -122,7 +146,7 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, email, fullName, password, role, status } = req.body;
+        const { username, email, fullName, password, role, status, householdId } = req.body;
 
         const user = await User.findByPk(id);
 
@@ -144,6 +168,22 @@ export const updateUser = async (req, res) => {
 
             if (existingUser) {
                 return res.status(400).json({ message: "Tên đăng nhập hoặc email đã tồn tại." });
+            }
+        }
+
+        // If householdId is being changed, check if it's already linked to another user
+        if (householdId !== undefined && householdId !== user.householdId) {
+            if (householdId) {
+                const householdInUse = await User.findOne({
+                    where: { 
+                        householdId,
+                        userId: { [Op.ne]: id }
+                    }
+                });
+                
+                if (householdInUse) {
+                    return res.status(400).json({ message: "Hộ gia đình này đã được gán cho người dùng khác." });
+                }
             }
         }
 
@@ -179,6 +219,11 @@ export const updateUser = async (req, res) => {
             oldValues.status = user.status;
             newValues.status = status;
             updateData.status = status;
+        }
+        if (householdId !== undefined && householdId !== user.householdId) {
+            oldValues.householdId = user.householdId;
+            newValues.householdId = householdId;
+            updateData.householdId = householdId;
         }
 
         await user.update(updateData);

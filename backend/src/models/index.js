@@ -55,4 +55,15 @@ User.hasMany(Log, {
     as: 'logs'
 });
 
+// User - Household associations
+User.belongsTo(Household, {
+    foreignKey: 'householdId',
+    as: 'household'
+});
+
+Household.hasOne(User, {
+    foreignKey: 'householdId',
+    as: 'user'
+});
+
 export { Bill, Household, User, Resident, Log, FeeType };

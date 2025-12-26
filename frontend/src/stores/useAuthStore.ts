@@ -83,9 +83,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({user});
 
         } catch (error) {
-            console.error(error);
+            console.error('fetchMe error:', error);
             set({user: null, accessToken: null});
-            toast. error ("Lỗi xảy ra khi lấy dữ liệu người dùng. Hãy thử lại !");
+            // Không hiển thị toast ở đây vì có thể gây spam khi refresh page
         } finally {
         set ({loading: false});
          }
