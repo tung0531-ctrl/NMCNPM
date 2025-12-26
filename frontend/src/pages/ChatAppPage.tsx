@@ -1,6 +1,7 @@
 import Logout from '@/components/auth/Logout'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { BillNotification } from '@/components/ui/bill-notification';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNavigate } from 'react-router';
 import { 
@@ -149,6 +150,7 @@ const isAdmin = user?.role === 'ADMIN';
                     )}
                   </div>
                   <div className="flex gap-2">
+                    {!isAdmin && <BillNotification />}
                     <Button 
                       variant="outline"
                       onClick={() => navigate('/profile')} 

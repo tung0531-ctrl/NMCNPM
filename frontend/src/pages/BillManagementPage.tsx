@@ -84,7 +84,18 @@ const BillManagementPage = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await getBills(filters);
+            // Sanitize string filters (trim spaces)
+            const sanitizedFilters = Object.fromEntries(
+                Object.entries(filters).map(([key, value]) => {
+                    if (typeof value === 'string') {
+                        // Collapse multiple spaces and trim
+                        const normalized = value.replace(/\s+/g, ' ').trim();
+                        return [key, normalized];
+                    }
+                    return [key, value];
+                })
+            );
+            const response = await getBills(sanitizedFilters);
             setBills(response.bills);
             setPagination(response.pagination);
         } catch (err) {
@@ -333,11 +344,11 @@ const BillManagementPage = () => {
                                         />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="householdName" className="text-base">Tên hộ</Label>
+                                        <Label htmlFor="householdName" className="text-base">Tên chủ hộ</Label>
                                         <Input
                                             id="householdName"
                                             type="text"
-                                            placeholder="Nhập tên hộ..."
+                                            placeholder="Tìm theo tên chủ hộ..."
                                             value={filters.householdName || ''}
                                             onChange={(e) => setFilters({ ...filters, householdName: e.target.value })}
                                             className="h-10 text-base"
@@ -347,8 +358,8 @@ const BillManagementPage = () => {
                                         <Label htmlFor="paymentPeriod" className="text-base">Kỳ thanh toán</Label>
                                         <Input
                                             id="paymentPeriod"
-                                            type="text"
-                                            placeholder="VD: 2025-12"
+                                            type="month"
+                                            title="Chọn kỳ thanh toán (YYYY-MM)"
                                             value={filters.paymentPeriod || ''}
                                             onChange={(e) => setFilters({ ...filters, paymentPeriod: e.target.value })}
                                             className="h-10 text-base"
@@ -371,11 +382,11 @@ const BillManagementPage = () => {
                                         </select>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor="collectorName" className="text-base">Người thu</Label>
+                                        <Label htmlFor="collectorName" className="text-base">Tên người thu</Label>
                                         <Input
                                             id="collectorName"
                                             type="text"
-                                            placeholder="Nhập tên người thu..."
+                                            placeholder="Tìm theo tên người thu..."
                                             value={filters.collectorName || ''}
                                             onChange={(e) => setFilters({ ...filters, collectorName: e.target.value })}
                                             className="h-10 text-base"
@@ -756,8 +767,9 @@ const BillManagementPage = () => {
                                     <Label htmlFor="edit-paymentPeriod" className="text-base">Kỳ thanh toán</Label>
                                     <Input
                                         id="edit-paymentPeriod"
+                                        type="month"
+                                        title="Chọn kỳ thanh toán (YYYY-MM)"
                                         {...register('paymentPeriod', { required: 'Kỳ thanh toán là bắt buộc' })}
-                                        placeholder="VD: 2025-12"
                                         className="h-10 text-base"
                                     />
                                     {errors.paymentPeriod && (
@@ -911,8 +923,9 @@ const BillManagementPage = () => {
                                     <Label htmlFor="create-paymentPeriod" className="text-base">Kỳ thanh toán</Label>
                                     <Input
                                         id="create-paymentPeriod"
+                                        type="month"
+                                        title="Chọn kỳ thanh toán (YYYY-MM)"
                                         {...registerCreate('paymentPeriod', { required: 'Kỳ thanh toán là bắt buộc' })}
-                                        placeholder="VD: 2025-12"
                                         className="h-10 text-base"
                                     />
                                     {errorsCreate.paymentPeriod && (
