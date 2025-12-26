@@ -148,6 +148,14 @@ export const signIn = async (req, res) => {
             });
         }
 
+        // kiểm tra RESIDENT chưa được gán hộ gia đình
+        if (user.role === 'RESIDENT' && !user.householdId) {
+            return res.status(403).json({
+                success: false,
+                message: "Tài khoản của bạn chưa được gắn với hộ gia đình. Vui lòng liên hệ quản trị viên."
+            });
+        }
+
         // xoá session cũ nếu có
         await Session.destroy({
             where: { userId: user.userId }
