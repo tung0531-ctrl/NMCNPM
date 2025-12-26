@@ -147,8 +147,8 @@ const ProfilePage = () => {
                         </div>
 
                         {user.role === 'RESIDENT' && (
-                          <div className="mt-4 p-4 bg-info/10 border border-info/20 rounded-lg">
-                            <p className="text-sm text-info-foreground">
+                          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-800">
                               <strong>Lưu ý:</strong> Các thông tin cá nhân chỉ được quản trị viên chỉnh sửa.
                               Vui lòng liên hệ admin nếu cần thay đổi thông tin.
                             </p>
