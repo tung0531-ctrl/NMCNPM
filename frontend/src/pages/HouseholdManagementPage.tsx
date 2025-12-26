@@ -504,15 +504,15 @@ const HouseholdManagementPage = () => {
 
                     {/* Edit Dialog */}
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                        <DialogContent className="sm:max-w-[525px]">
+                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                             <DialogHeader>
                                 <DialogTitle>Chỉnh sửa hộ gia đình</DialogTitle>
                                 <DialogDescription>
                                     Cập nhật thông tin hộ gia đình
                                 </DialogDescription>
                             </DialogHeader>
-                            <form onSubmit={handleSubmit(onSubmitEdit)}>
-                                <div className="grid gap-4 py-4">
+                            <form onSubmit={handleSubmit(onSubmitEdit)} className="flex flex-col flex-1 overflow-hidden">
+                                <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                     <div className="grid gap-2">
                                         <Label htmlFor="edit-householdCode">Mã hộ</Label>
                                         <Input
@@ -583,15 +583,15 @@ const HouseholdManagementPage = () => {
                     </Dialog>
 
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                        <DialogContent className="sm:max-w-[525px]">
+                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                             <DialogHeader>
                                 <DialogTitle>Thêm hộ gia đình mới</DialogTitle>
                                 <DialogDescription>
                                     Nhập thông tin hộ gia đình mới
                                 </DialogDescription>
                             </DialogHeader>
-                            <form onSubmit={handleSubmit(onSubmitCreate)}>
-                                <div className="grid gap-4 py-4">
+                            <form onSubmit={handleSubmit(onSubmitCreate)} className="flex flex-col flex-1 overflow-hidden">
+                                <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                     <div className="grid gap-2">
                                         <Label htmlFor="create-householdCode">Mã hộ</Label>
                                         <Input

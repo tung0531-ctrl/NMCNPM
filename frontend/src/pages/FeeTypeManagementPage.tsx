@@ -518,15 +518,15 @@ const FeeTypeManagementPage = () => {
 
                     {/* Edit Dialog */}
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                        <DialogContent className="sm:max-w-[525px]">
+                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                             <DialogHeader>
                                 <DialogTitle>Chỉnh sửa loại khoản thu</DialogTitle>
                             <DialogDescription>
                                 Cập nhật thông tin loại khoản thu
                             </DialogDescription>
                         </DialogHeader>
-                        <form onSubmit={handleSubmit(onSubmitEdit)}>
-                            <div className="grid gap-4 py-4">
+                        <form onSubmit={handleSubmit(onSubmitEdit)} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-feeName">Tên loại khoản thu</Label>
                                     <Input
@@ -605,15 +605,15 @@ const FeeTypeManagementPage = () => {
 
                 {/* Create Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogContent className="sm:max-w-[525px]">
+                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Thêm loại khoản thu mới</DialogTitle>
                             <DialogDescription>
                                 Tạo loại khoản thu mới trong hệ thống
                             </DialogDescription>
                         </DialogHeader>
-                        <form onSubmit={handleSubmitCreate(onSubmitCreate)}>
-                            <div className="grid gap-4 py-4">
+                        <form onSubmit={handleSubmitCreate(onSubmitCreate)} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-feeName">Tên loại khoản thu</Label>
                                     <Input

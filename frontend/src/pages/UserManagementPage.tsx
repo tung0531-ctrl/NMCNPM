@@ -538,16 +538,16 @@ const UserManagementPage = () => {
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Tạo người dùng mới</DialogTitle>
             <DialogDescription>
               Nhập thông tin để tạo người dùng mới
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
             <div className="grid gap-2">
-              <Label htmlFor="create-username" className="text-base">Tên đăng nhập</Label>
+              <Label htmlFor="create-username">Tên đăng nhập</Label>
               <Input
                 id="create-username"
                 value={formData.username}
@@ -555,11 +555,10 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, username: e.target.value })
                 }
                 placeholder="Nhập tên đăng nhập..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-email" className="text-base">Email</Label>
+              <Label htmlFor="create-email">Email</Label>
               <Input
                 id="create-email"
                 type="email"
@@ -568,11 +567,10 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 placeholder="Nhập email..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-fullname" className="text-base">Họ tên</Label>
+              <Label htmlFor="create-fullname">Họ tên</Label>
               <Input
                 id="create-fullname"
                 value={formData.fullName}
@@ -580,11 +578,10 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, fullName: e.target.value })
                 }
                 placeholder="Nhập họ tên..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-password" className="text-base">Mật khẩu</Label>
+              <Label htmlFor="create-password">Mật khẩu</Label>
               <Input
                 id="create-password"
                 type="password"
@@ -593,15 +590,14 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 placeholder="Nhập mật khẩu..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-role" className="text-base">Vai trò</Label>
+              <Label htmlFor="create-role">Vai trò</Label>
               <select
                 id="create-role"
                 aria-label="Chọn vai trò người dùng"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value as "ADMIN" | "RESIDENT" })
@@ -612,11 +608,11 @@ const UserManagementPage = () => {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-status" className="text-base">Trạng thái</Label>
+              <Label htmlFor="create-status">Trạng thái</Label>
               <select
                 id="create-status"
                 aria-label="Chọn trạng thái tài khoản"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as "ACTIVE" | "LOCKED" })
@@ -627,11 +623,11 @@ const UserManagementPage = () => {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-household" className="text-base">Hộ gia đình</Label>
+              <Label htmlFor="create-household">Hộ gia đình</Label>
               <select
                 id="create-household"
                 aria-label="Chọn hộ gia đình"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.householdId || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, householdId: e.target.value ? Number(e.target.value) : null })
@@ -656,27 +652,26 @@ const UserManagementPage = () => {
                 setIsCreateDialogOpen(false);
                 resetForm();
               }}
-              className="h-10 text-base px-4"
             >
               Hủy
             </Button>
-            <Button onClick={handleCreateUser} className="h-10 text-base px-4">Tạo mới</Button>
+            <Button onClick={handleCreateUser}>Tạo mới</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Chỉnh sửa thông tin người dùng</DialogTitle>
             <DialogDescription>
               Cập nhật thông tin người dùng
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
             <div className="grid gap-2">
-              <Label htmlFor="edit-username" className="text-base">Tên đăng nhập</Label>
+              <Label htmlFor="edit-username">Tên đăng nhập</Label>
               <Input
                 id="edit-username"
                 value={formData.username}
@@ -684,11 +679,10 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, username: e.target.value })
                 }
                 placeholder="Nhập tên đăng nhập..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-email" className="text-base">Email</Label>
+              <Label htmlFor="edit-email">Email</Label>
               <Input
                 id="edit-email"
                 type="email"
@@ -697,11 +691,10 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 placeholder="Nhập email..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-fullname" className="text-base">Họ tên</Label>
+              <Label htmlFor="edit-fullname">Họ tên</Label>
               <Input
                 id="edit-fullname"
                 value={formData.fullName}
@@ -709,11 +702,10 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, fullName: e.target.value })
                 }
                 placeholder="Nhập họ tên..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-password" className="text-base">Mật khẩu mới (để trống nếu không đổi)</Label>
+              <Label htmlFor="edit-password">Mật khẩu mới (để trống nếu không đổi)</Label>
               <Input
                 id="edit-password"
                 type="password"
@@ -722,15 +714,14 @@ const UserManagementPage = () => {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 placeholder="Nhập mật khẩu mới..."
-                className="h-10 text-base"
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-role" className="text-base">Vai trò</Label>
+              <Label htmlFor="edit-role">Vai trò</Label>
               <select
                 id="edit-role"
                 aria-label="Chọn vai trò người dùng"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value as "ADMIN" | "RESIDENT" })
@@ -741,11 +732,11 @@ const UserManagementPage = () => {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-status" className="text-base">Trạng thái</Label>
+              <Label htmlFor="edit-status">Trạng thái</Label>
               <select
                 id="edit-status"
                 aria-label="Chọn trạng thái tài khoản"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as "ACTIVE" | "LOCKED" })
@@ -756,11 +747,11 @@ const UserManagementPage = () => {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-household" className="text-base">Hộ gia đình</Label>
+              <Label htmlFor="edit-household">Hộ gia đình</Label>
               <select
                 id="edit-household"
                 aria-label="Chọn hộ gia đình"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.householdId || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, householdId: e.target.value ? Number(e.target.value) : null })
@@ -785,11 +776,10 @@ const UserManagementPage = () => {
                 setIsEditDialogOpen(false);
                 resetForm();
               }}
-              className="h-10 text-base px-4"
             >
               Hủy
             </Button>
-            <Button onClick={handleUpdateUser} className="h-10 text-base px-4">Cập nhật</Button>
+            <Button onClick={handleUpdateUser}>Cập nhật</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

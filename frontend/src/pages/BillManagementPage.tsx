@@ -660,15 +660,15 @@ const BillManagementPage = () => {
 
                 {/* Edit Dialog */}
                 <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                    <DialogContent className="sm:max-w-[525px]">
+                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Chỉnh sửa khoản thu</DialogTitle>
                             <DialogDescription>
                                 Cập nhật thông tin khoản thu cho hộ gia đình
                             </DialogDescription>
                         </DialogHeader>
-                        <form onSubmit={handleSubmit(onSubmitEdit)}>
-                            <div className="grid gap-4 py-4">
+                        <form onSubmit={handleSubmit(onSubmitEdit)} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-household" className="text-base">Hộ gia đình</Label>
                                     <select
@@ -814,15 +814,15 @@ const BillManagementPage = () => {
 
                 {/* Create Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogContent className="sm:max-w-[525px]">
+                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Thêm khoản thu mới</DialogTitle>
                             <DialogDescription>
                                 Tạo khoản thu cho hộ gia đình
                             </DialogDescription>
                         </DialogHeader>
-                        <form onSubmit={handleSubmitCreate(onSubmitCreate)}>
-                            <div className="grid gap-4 py-4">
+                        <form onSubmit={handleSubmitCreate(onSubmitCreate)} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                 <div className="grid gap-2">
                                     <Label htmlFor="create-household" className="text-base">Hộ gia đình</Label>
                                     <select

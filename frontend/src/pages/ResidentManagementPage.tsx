@@ -570,15 +570,15 @@ const ResidentManagementPage = () => {
 
                                 {/* Create Dialog */}
                                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                                    <DialogContent className="sm:max-w-[525px]">
+                                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                                         <DialogHeader>
                                             <DialogTitle>Thêm cư dân mới</DialogTitle>
                                             <DialogDescription>
                                                 Nhập thông tin cho cư dân mới
                                             </DialogDescription>
                                         </DialogHeader>
-                                        <form onSubmit={createForm.handleSubmit(handleCreate)}>
-                                            <div className="grid gap-4 py-4">
+                                        <form onSubmit={createForm.handleSubmit(handleCreate)} className="flex flex-col flex-1 overflow-hidden">
+                                            <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="create-householdId">Hộ khẩu</Label>
                                                     <select
@@ -687,15 +687,15 @@ const ResidentManagementPage = () => {
 
                                 {/* Edit Dialog */}
                                 <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                                    <DialogContent className="sm:max-w-[525px]">
+                                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
                                         <DialogHeader>
                                             <DialogTitle>Chỉnh sửa thông tin cư dân</DialogTitle>
                                             <DialogDescription>
                                                 Cập nhật thông tin cư dân
                                             </DialogDescription>
                                         </DialogHeader>
-                                        <form onSubmit={editForm.handleSubmit(handleEdit)}>
-                                            <div className="grid gap-4 py-4">
+                                        <form onSubmit={editForm.handleSubmit(handleEdit)} className="flex flex-col flex-1 overflow-hidden">
+                                            <div className="grid gap-4 py-4 px-1 overflow-y-auto max-h-[60vh]">
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="edit-householdId">Hộ khẩu</Label>
                                                     <select
