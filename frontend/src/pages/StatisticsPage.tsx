@@ -139,7 +139,7 @@ const StatisticsPage = () => {
                     <Label htmlFor="startDate" className="text-base">Từ ngày</Label>
                     <Input
                       id="startDate"
-                      type="date"
+                      type="month"
                       value={dateRange.startDate}
                       onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
                       className="h-10 text-base"
@@ -150,7 +150,7 @@ const StatisticsPage = () => {
                     <Label htmlFor="endDate" className="text-base">Đến ngày</Label>
                     <Input
                       id="endDate"
-                      type="date"
+                      type="month"
                       value={dateRange.endDate}
                       onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
                       className="h-10 text-base"
