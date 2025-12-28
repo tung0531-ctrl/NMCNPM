@@ -109,6 +109,9 @@ export const getResidentById = async (req, res) => {
             return res.status(404).json({ message: 'Resident not found' });
         }
 
+        // Log view resident
+        await createLog(req.user?.userId || null, LogActions.VIEW_RESIDENT, EntityTypes.RESIDENT, id, { fullName: resident.fullName }, req);
+
         res.status(200).json(resident);
     } catch (error) {
         console.error('Error fetching resident:', error);

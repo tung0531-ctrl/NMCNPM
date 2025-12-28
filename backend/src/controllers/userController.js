@@ -211,11 +211,21 @@ export const updateUser = async (req, res) => {
             updateData.passwordHash = await bcrypt.hash(password, 10);
         }
         if (role && role !== user.role) {
+            // Prevent admin from demoting their own role from ADMIN to RESIDENT
+            if (Number(id) === req.user.userId && user.role === 'ADMIN' && role === 'RESIDENT') {
+                return res.status(400).json({ message: "Không thể chuyển quyền của chính tài khoản từ 'ADMIN' sang 'RESIDENT'." });
+            }
+
             oldValues.role = user.role;
             newValues.role = role;
             updateData.role = role;
         }
         if (status && status !== user.status) {
+            // Prevent locking the currently authenticated user's own account
+            if (status === 'LOCKED' && Number(id) === req.user.userId) {
+                return res.status(400).json({ message: "Không thể đặt trạng thái 'LOCKED' cho chính tài khoản đang đăng nhập." });
+            }
+
             oldValues.status = user.status;
             newValues.status = status;
             updateData.status = status;

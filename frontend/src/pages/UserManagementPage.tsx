@@ -3,6 +3,7 @@ import { userService } from "../services/userService";
 import type { User, CreateUserData, UpdateUserData } from "../services/userService";
 import { getAllHouseholds, type Household } from "../services/householdService";
 import { toast } from "sonner";
+import { useAuthStore } from "../stores/useAuthStore";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -50,6 +51,7 @@ const UserManagementPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const currentUser = useAuthStore((s) => s.user);
   
   const [formData, setFormData] = useState<CreateUserData>({
     username: "",
@@ -150,6 +152,16 @@ const UserManagementPage = () => {
 
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
+    // Prevent admin from locking their own account client-side
+    if (currentUser && selectedUser.userId === currentUser.userId && formData.status === 'LOCKED') {
+      toast.error('Bạn không được phép tự khoá chính mình');
+      return;
+    }
+    // Prevent admin from demoting their own role client-side
+    if (currentUser && selectedUser.userId === currentUser.userId && formData.role === 'RESIDENT' && selectedUser.role === 'ADMIN') {
+      toast.error('Bạn không được phép hạ quyền chính mình từ ADMIN sang RESIDENT');
+      return;
+    }
     
     const updateData: UpdateUserData = {};
     if (formData.username !== selectedUser.username) updateData.username = formData.username;
@@ -202,6 +214,12 @@ const UserManagementPage = () => {
   };
 
   const openDeleteDialog = (user: User) => {
+    // Prevent opening delete dialog for current user's own account
+    if (currentUser && user.userId === currentUser.userId) {
+      toast.error("Không thể xóa tài khoản của chính mình.");
+      return;
+    }
+
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
   };
@@ -274,7 +292,7 @@ const UserManagementPage = () => {
                     disabled={loading}
                     className="h-10 text-base px-4"
                   >
-                    Xóa tìm kiếm
+                    Xóa bộ lọc
                   </Button>
                 </div>
 
@@ -360,6 +378,7 @@ const UserManagementPage = () => {
                                     size="sm"
                                     variant="destructive"
                                     onClick={() => openDeleteDialog(user)}
+                                    disabled={user.userId === currentUser?.userId}
                                     className="h-9 text-base"
                                   >
                                     Xóa
@@ -619,7 +638,7 @@ const UserManagementPage = () => {
                 }
               >
                 <option value="ACTIVE">ACTIVE</option>
-                <option value="LOCKED">LOCKED</option>
+                <option value="LOCKED" disabled={selectedUser?.userId === currentUser?.userId}>LOCKED</option>
               </select>
             </div>
             <div className="grid gap-2">

@@ -48,6 +48,9 @@ export const getAllHouseholds = async (req, res) => {
             order: [['ownerName', 'ASC']]
         });
 
+        // Log admin viewing all households
+        await createLog(req.user?.userId || null, LogActions.VIEW_ALL_HOUSEHOLDS, EntityTypes.HOUSEHOLD, null, { count: households.length }, req);
+
         res.status(200).json({
             households: households.map(h => ({
                 householdId: h.householdId,

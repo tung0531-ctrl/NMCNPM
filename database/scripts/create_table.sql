@@ -89,16 +89,16 @@ CREATE TABLE fee_types (
 -- BQL (Admin) sẽ là người tạo hóa đơn
 CREATE TABLE bills (
     bill_id INT AUTO_INCREMENT PRIMARY KEY,
-    household_id INT NOT NULL,
+    household_id INT NULL,
     billing_period DATE NOT NULL, 
     title VARCHAR(200), 
     total_amount DECIMAL(15, 2) DEFAULT 0, 
     paid_amount DECIMAL(15, 2) DEFAULT 0, 
     payment_status ENUM('UNPAID', 'PARTIAL', 'PAID') DEFAULT 'UNPAID', 
-    created_by INT, -- Người tạo là BQL (Admin)
+    created_by INT NULL, -- Người tạo là BQL (Admin)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (household_id) REFERENCES households(household_id),
-    FOREIGN KEY (created_by) REFERENCES users(user_id)
+    FOREIGN KEY (household_id) REFERENCES households(household_id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
 -- Bảng Chi tiết hóa đơn
@@ -122,11 +122,11 @@ CREATE TABLE transactions (
     amount DECIMAL(15, 2) NOT NULL, 
     payment_method ENUM('CASH', 'TRANSFER') NOT NULL, 
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    collector_id INT, -- Người thu tiền là BQL (Admin)
+    collector_id INT NULL, -- Người thu tiền là BQL (Admin)
     transaction_code VARCHAR(50), 
     note TEXT, 
     FOREIGN KEY (bill_id) REFERENCES bills(bill_id),
-    FOREIGN KEY (collector_id) REFERENCES users(user_id)
+    FOREIGN KEY (collector_id) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
 
@@ -138,15 +138,15 @@ DROP TABLE IF EXISTS transactions;
 
 -- Thêm cột Loại phí tham chiếu sang bảng fee_types
 ALTER TABLE bills
-ADD COLUMN fee_type_id INT NOT NULL,
+ADD COLUMN fee_type_id INT NULL,
 ADD CONSTRAINT fk_bill_fee_type
-FOREIGN KEY (fee_type_id) REFERENCES fee_types(fee_type_id);
+FOREIGN KEY (fee_type_id) REFERENCES fee_types(fee_type_id) ON DELETE SET NULL;
 
 -- Định danh người thực hiện thu tiền tham chiếu bảng users
 ALTER TABLE bills
 ADD COLUMN collector_id INT NULL,
 ADD CONSTRAINT fk_bill_collector
-FOREIGN KEY (collector_id) REFERENCES users(user_id);
+FOREIGN KEY (collector_id) REFERENCES users(user_id) ON DELETE SET NULL;
 
 
 -- =============================================

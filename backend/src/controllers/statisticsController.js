@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { sequelize } from '../libs/db.js';
 import Bill from '../models/Bill.js';
 import FeeType from '../models/FeeType.js';
@@ -25,31 +25,37 @@ export const getStatisticsByFeeType = async (req, res) => {
             },
         };
 
-        const statistics = await Bill.findAll({
-            attributes: [
-                'feeTypeId',
-                [sequelize.fn('COUNT', sequelize.col('Bill.bill_id')), 'totalBills'],
-                [sequelize.fn('SUM', sequelize.col('Bill.total_amount')), 'totalRevenue'],
-                [sequelize.fn('SUM', sequelize.col('Bill.paid_amount')), 'totalPaid'],
-            ],
-            where: whereCondition,
-            include: [
-                {
-                    model: FeeType,
-                    attributes: ['feeTypeId', 'feeName'],
-                },
-            ],
-            group: ['Bill.fee_type_id', 'FeeType.fee_type_id', 'FeeType.fee_name'],
-            raw: false,
+        const feeSql = `
+            SELECT
+                fee_type_id AS feeTypeId,
+                COUNT(*) AS totalBills,
+                COALESCE(SUM(total_amount), 0) AS totalRevenue,
+                COALESCE(SUM(paid_amount), 0) AS totalPaid
+            FROM bills
+            WHERE billing_period BETWEEN :start AND :end
+            GROUP BY fee_type_id
+            ORDER BY totalRevenue DESC
+        `;
+
+        const statistics = await sequelize.query(feeSql, {
+            type: QueryTypes.SELECT,
+            replacements: { start: new Date(startDate), end: new Date(endDate) },
         });
+
+        const feeTypeIds = statistics.map(s => s.feeTypeId).filter(id => id != null);
+        const feeTypes = feeTypeIds.length
+            ? await FeeType.findAll({ where: { feeTypeId: feeTypeIds }, attributes: ['feeTypeId', 'feeName'], raw: true })
+            : [];
+        const feeMap = {};
+        feeTypes.forEach(f => { feeMap[f.feeTypeId] = f.feeName; });
 
         const formattedStats = statistics.map(stat => ({
             feeTypeId: stat.feeTypeId,
-            feeTypeName: stat.FeeType?.feeName || 'Unknown',
-            totalBills: parseInt(stat.dataValues.totalBills || 0),
-            totalRevenue: parseFloat(stat.dataValues.totalRevenue || 0),
-            totalPaid: parseFloat(stat.dataValues.totalPaid || 0),
-            unpaidAmount: parseFloat((stat.dataValues.totalRevenue || 0) - (stat.dataValues.totalPaid || 0)),
+            feeTypeName: feeMap[stat.feeTypeId] || 'Unknown',
+            totalBills: parseInt(stat.totalBills || 0),
+            totalRevenue: parseFloat(stat.totalRevenue || 0),
+            totalPaid: parseFloat(stat.totalPaid || 0),
+            unpaidAmount: parseFloat((stat.totalRevenue || 0) - (stat.totalPaid || 0)),
         }));
 
         res.json({
@@ -86,44 +92,34 @@ export const getStatisticsByHousehold = async (req, res) => {
             },
         };
 
-        const statistics = await Bill.findAll({
-            attributes: [
-                'householdId',
-                [sequelize.fn('COUNT', sequelize.col('Bill.bill_id')), 'totalBills'],
-                [sequelize.fn('SUM', sequelize.col('Bill.total_amount')), 'totalRevenue'],
-                [sequelize.fn('SUM', sequelize.col('Bill.paid_amount')), 'totalPaid'],
-            ],
-            where: whereCondition,
-            include: [
-                {
-                    model: Household,
-                    as: 'household_bill',
-                    attributes: [],
-                },
-            ],
-            group: ['Bill.household_id'],
-            order: [[sequelize.literal('totalRevenue'), 'DESC']],
-            limit: parseInt(limit),
-            subQuery: false,
-            raw: true,
+        const householdSql = `
+            SELECT
+                household_id AS householdId,
+                COUNT(*) AS totalBills,
+                COALESCE(SUM(total_amount), 0) AS totalRevenue,
+                COALESCE(SUM(paid_amount), 0) AS totalPaid
+            FROM bills
+            WHERE billing_period BETWEEN :start AND :end
+            GROUP BY household_id
+            ORDER BY totalRevenue DESC
+            LIMIT :limit
+        `;
+
+        const statistics = await sequelize.query(householdSql, {
+            type: QueryTypes.SELECT,
+            replacements: { start: new Date(startDate), end: new Date(endDate), limit: parseInt(limit) },
         });
 
-        // Sau đó lấy thêm thông tin household riêng
-        const householdIds = statistics.map(stat => stat.householdId);
-        const households = await Household.findAll({
-            where: { householdId: householdIds },
-            attributes: ['householdId', 'ownerName'],
-            raw: true,
-        });
-        
+        const householdIds = statistics.map(s => s.householdId).filter(id => id != null);
+        const households = householdIds.length
+            ? await Household.findAll({ where: { householdId: householdIds }, attributes: ['householdId', 'ownerName'], raw: true })
+            : [];
         const householdMap = {};
-        households.forEach(h => {
-            householdMap[h.householdId] = h.ownerName;
-        });
+        households.forEach(h => { householdMap[h.householdId] = h.ownerName; });
 
         const formattedStats = statistics.map(stat => ({
             householdId: stat.householdId,
-            householdName: householdMap[stat.householdId] || 'Unknown',
+            householdName: stat.householdId == null ? '-' : (householdMap[stat.householdId] || 'Unknown'),
             totalBills: parseInt(stat.totalBills || 0),
             totalRevenue: parseFloat(stat.totalRevenue || 0),
             totalPaid: parseFloat(stat.totalPaid || 0),
@@ -165,32 +161,38 @@ export const getStatisticsByCollector = async (req, res) => {
             },
         };
 
-        const statistics = await Bill.findAll({
-            attributes: [
-                'collectorId',
-                [sequelize.fn('COUNT', sequelize.col('Bill.bill_id')), 'totalBills'],
-                [sequelize.fn('SUM', sequelize.col('Bill.total_amount')), 'totalRevenue'],
-                [sequelize.fn('SUM', sequelize.col('Bill.paid_amount')), 'totalPaid'],
-            ],
-            where: whereCondition,
-            include: [
-                {
-                    model: User,
-                    as: 'Collector',
-                    attributes: ['userId', 'username', 'fullName'],
-                },
-            ],
-            group: ['Bill.collector_id', 'Collector.user_id', 'Collector.username', 'Collector.full_name'],
-            raw: false,
+        const collectorSql = `
+            SELECT
+                collector_id AS collectorId,
+                COUNT(*) AS totalBills,
+                COALESCE(SUM(total_amount), 0) AS totalRevenue,
+                COALESCE(SUM(paid_amount), 0) AS totalPaid
+            FROM bills
+            WHERE collector_id IS NOT NULL
+              AND billing_period BETWEEN :start AND :end
+            GROUP BY collector_id
+            ORDER BY totalRevenue DESC
+        `;
+
+        const statistics = await sequelize.query(collectorSql, {
+            type: QueryTypes.SELECT,
+            replacements: { start: new Date(startDate), end: new Date(endDate) },
         });
+
+        const collectorIds = statistics.map(s => s.collectorId).filter(id => id != null);
+        const collectors = collectorIds.length
+            ? await User.findAll({ where: { userId: collectorIds }, attributes: ['userId', 'username', 'fullName'], raw: true })
+            : [];
+        const collectorMap = {};
+        collectors.forEach(c => { collectorMap[c.userId] = c.fullName || c.username; });
 
         const formattedStats = statistics.map(stat => ({
             collectorId: stat.collectorId,
-            collectorName: stat.Collector?.fullName || stat.Collector?.username || 'Unknown',
-            totalBills: parseInt(stat.dataValues.totalBills || 0),
-            totalRevenue: parseFloat(stat.dataValues.totalRevenue || 0),
-            totalPaid: parseFloat(stat.dataValues.totalPaid || 0),
-            unpaidAmount: parseFloat((stat.dataValues.totalRevenue || 0) - (stat.dataValues.totalPaid || 0)),
+            collectorName: collectorMap[stat.collectorId] || 'Unknown',
+            totalBills: parseInt(stat.totalBills || 0),
+            totalRevenue: parseFloat(stat.totalRevenue || 0),
+            totalPaid: parseFloat(stat.totalPaid || 0),
+            unpaidAmount: parseFloat((stat.totalRevenue || 0) - (stat.totalPaid || 0)),
         }));
 
         res.json({
@@ -227,16 +229,20 @@ export const getStatisticsByPaymentStatus = async (req, res) => {
             },
         };
 
-        const statistics = await Bill.findAll({
-            attributes: [
-                'paymentStatus',
-                [sequelize.fn('COUNT', sequelize.col('Bill.bill_id')), 'totalBills'],
-                [sequelize.fn('SUM', sequelize.col('Bill.total_amount')), 'totalRevenue'],
-                [sequelize.fn('SUM', sequelize.col('Bill.paid_amount')), 'totalPaid'],
-            ],
-            where: whereCondition,
-            group: ['Bill.payment_status'],
-            raw: true,
+        const paymentSql = `
+            SELECT
+                payment_status AS paymentStatus,
+                COUNT(*) AS totalBills,
+                COALESCE(SUM(total_amount), 0) AS totalRevenue,
+                COALESCE(SUM(paid_amount), 0) AS totalPaid
+            FROM bills
+            WHERE billing_period BETWEEN :start AND :end
+            GROUP BY payment_status
+        `;
+
+        const statistics = await sequelize.query(paymentSql, {
+            type: QueryTypes.SELECT,
+            replacements: { start: new Date(startDate), end: new Date(endDate) },
         });
 
         const formattedStats = statistics.map(stat => ({
@@ -281,27 +287,26 @@ export const getStatisticsByPeriod = async (req, res) => {
             },
         };
 
-        // Tạo format theo groupBy
-        let dateFormat;
-        if (groupBy === 'year') {
-            dateFormat = sequelize.fn('DATE_FORMAT', sequelize.col('Bill.billing_period'), '%Y');
-        } else if (groupBy === 'month') {
-            dateFormat = sequelize.fn('DATE_FORMAT', sequelize.col('Bill.billing_period'), '%Y-%m');
-        } else {
-            dateFormat = sequelize.fn('DATE_FORMAT', sequelize.col('Bill.billing_period'), '%Y-%m-%d');
-        }
+        // Build the SQL date format depending on groupBy
+        let fmt = '%Y-%m-%d';
+        if (groupBy === 'month') fmt = '%Y-%m';
+        if (groupBy === 'year') fmt = '%Y';
 
-        const statistics = await Bill.findAll({
-            attributes: [
-                [dateFormat, 'period'],
-                [sequelize.fn('COUNT', sequelize.col('Bill.bill_id')), 'totalBills'],
-                [sequelize.fn('SUM', sequelize.col('Bill.total_amount')), 'totalRevenue'],
-                [sequelize.fn('SUM', sequelize.col('Bill.paid_amount')), 'totalPaid'],
-            ],
-            where: whereCondition,
-            group: [sequelize.literal('period')],
-            order: [[sequelize.literal('period'), 'ASC']],
-            raw: true,
+        const periodSql = `
+            SELECT
+                DATE_FORMAT(billing_period, '${fmt}') AS period,
+                COUNT(*) AS totalBills,
+                COALESCE(SUM(total_amount), 0) AS totalRevenue,
+                COALESCE(SUM(paid_amount), 0) AS totalPaid
+            FROM bills
+            WHERE billing_period BETWEEN :start AND :end
+            GROUP BY period
+            ORDER BY period ASC
+        `;
+
+        const statistics = await sequelize.query(periodSql, {
+            type: QueryTypes.SELECT,
+            replacements: { start: new Date(startDate), end: new Date(endDate) },
         });
 
         const formattedStats = statistics.map(stat => ({
@@ -346,27 +351,38 @@ export const getOverallStatistics = async (req, res) => {
             },
         };
 
-        const overall = await Bill.findOne({
-            attributes: [
-                [sequelize.fn('COUNT', sequelize.col('Bill.bill_id')), 'totalBills'],
-                [sequelize.fn('SUM', sequelize.col('Bill.total_amount')), 'totalRevenue'],
-                [sequelize.fn('SUM', sequelize.col('Bill.paid_amount')), 'totalPaid'],
-                [sequelize.fn('COUNT', sequelize.literal("CASE WHEN payment_status = 'PAID' THEN 1 END")), 'paidBills'],
-                [sequelize.fn('COUNT', sequelize.literal("CASE WHEN payment_status = 'UNPAID' THEN 1 END")), 'unpaidBills'],
-                [sequelize.fn('COUNT', sequelize.literal("CASE WHEN payment_status = 'PARTIAL' THEN 1 END")), 'partialBills'],
-            ],
-            where: whereCondition,
-            raw: true,
+        const overallSql = `
+            SELECT
+                COUNT(*) AS totalBills,
+                COALESCE(SUM(total_amount), 0) AS totalRevenue,
+                COALESCE(SUM(paid_amount), 0) AS totalPaid,
+                SUM(CASE WHEN payment_status = 'PAID' THEN 1 ELSE 0 END) AS paidBills,
+                SUM(CASE WHEN payment_status = 'UNPAID' THEN 1 ELSE 0 END) AS unpaidBills,
+                SUM(CASE WHEN payment_status = 'PARTIAL' THEN 1 ELSE 0 END) AS partialBills
+            FROM bills
+            WHERE billing_period BETWEEN :start AND :end
+        `;
+
+        const [overall] = await sequelize.query(overallSql, {
+            type: QueryTypes.SELECT,
+            replacements: { start: new Date(startDate), end: new Date(endDate) },
         });
 
+        const totalBills = parseInt(overall.totalBills || 0);
+        const paidBills = parseInt(overall.paidBills || 0);
+        const unpaidBills = parseInt(overall.unpaidBills || 0);
+        const partialBills = parseInt(overall.partialBills || 0);
+        const otherBills = totalBills - (paidBills + unpaidBills + partialBills);
+
         const formattedOverall = {
-            totalBills: parseInt(overall.totalBills || 0),
+            totalBills,
             totalRevenue: parseFloat(overall.totalRevenue || 0),
             totalPaid: parseFloat(overall.totalPaid || 0),
             unpaidAmount: parseFloat((overall.totalRevenue || 0) - (overall.totalPaid || 0)),
-            paidBills: parseInt(overall.paidBills || 0),
-            unpaidBills: parseInt(overall.unpaidBills || 0),
-            partialBills: parseInt(overall.partialBills || 0),
+            paidBills,
+            unpaidBills,
+            partialBills,
+            otherBills: otherBills < 0 ? 0 : otherBills,
         };
 
         res.json({

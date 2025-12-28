@@ -65,6 +65,9 @@ export const getActiveFeeTypes = async (req, res) => {
             order: [['feeName', 'ASC']]
         });
 
+        // Log viewing active fee types
+        await createLog(req.user?.userId || null, LogActions.VIEW_ALL_FEE_TYPES, EntityTypes.FEE_TYPE, null, { count: feeTypes.length }, req);
+
         res.status(200).json({
             feeTypes: feeTypes.map(ft => ({
                 feeTypeId: ft.feeTypeId,

@@ -109,7 +109,9 @@ export const getAllBills = async (req, res) => {
                     as: 'household_bill',
                     attributes: ['ownerName', 'householdCode', 'address'],
                     where: Object.keys(householdWhere).length > 0 ? householdWhere : undefined,
-                    required: true
+                    // If the client filters by householdName we need the join to be required,
+                    // otherwise keep it non-required so bills with NULL household_id are still returned.
+                    required: Object.keys(householdWhere).length > 0 ? true : false
                 },
                 {
                     model: User,
@@ -151,7 +153,7 @@ export const getAllBills = async (req, res) => {
             
             return {
                 billId: billData.billId,
-                householdName: billData.household_bill?.ownerName || '',
+                    householdName: billData.household_bill?.ownerName || '-',
                 title: billData.title,
                 totalAmount: billData.totalAmount,
                 paidAmount: billData.paidAmount,
@@ -324,7 +326,7 @@ export const updateBill = async (req, res) => {
         await createLog(req.user.userId, LogActions.UPDATE_BILL, EntityTypes.BILL, id, 
             { 
                 billId: id,
-                householdName: billData.household_bill?.ownerName,
+                    householdName: billData.household_bill?.ownerName || '-',
                 title: billData.title,
                 old_values: oldValues,
                 new_values: newValues
@@ -332,7 +334,7 @@ export const updateBill = async (req, res) => {
 
         res.status(200).json({
             billId: billData.billId,
-            householdName: billData.household_bill?.ownerName || '',
+                householdName: billData.household_bill?.ownerName || '-',
             title: billData.title,
             totalAmount: billData.totalAmount,
             paidAmount: billData.paidAmount,
@@ -427,7 +429,7 @@ export const createBill = async (req, res) => {
         // Log create bill activity
         await createLog(req.user.userId, LogActions.CREATE_BILL, EntityTypes.BILL, bill.billId, 
             { 
-                householdName: billData.household_bill?.ownerName,
+                    householdName: billData.household_bill?.ownerName || '-',
                 householdId: bill.householdId,
                 title: billData.title,
                 totalAmount: billData.totalAmount,
@@ -440,7 +442,7 @@ export const createBill = async (req, res) => {
 
         res.status(201).json({
             billId: billData.billId,
-            householdName: billData.household_bill?.ownerName || '',
+                householdName: billData.household_bill?.ownerName || '-',
             title: billData.title,
             totalAmount: billData.totalAmount,
             paidAmount: billData.paidAmount,
@@ -475,7 +477,7 @@ export const deleteBill = async (req, res) => {
 
         const billData = {
             billId: bill.billId,
-            householdName: bill.household_bill?.ownerName,
+            householdName: bill.household_bill?.ownerName || '-',
             householdId: bill.householdId,
             title: bill.title,
             totalAmount: bill.totalAmount,
@@ -535,7 +537,7 @@ export const getBillsForResident = async (req, res) => {
 
             return {
                 billId: data.billId,
-                householdName: data.household_bill?.ownerName || '',
+                householdName: data.household_bill?.ownerName || '-',
                 title: data.title,
                 totalAmount: data.totalAmount,
                 paidAmount: data.paidAmount,

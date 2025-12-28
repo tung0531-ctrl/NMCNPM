@@ -134,6 +134,8 @@ export const LogActions = {
     DELETE_BILL: 'DELETE_BILL',
     VIEW_BILL: 'VIEW_BILL',
     VIEW_ALL_BILLS: 'VIEW_ALL_BILLS',
+    // Statistics
+    VIEW_STATISTICS: 'VIEW_STATISTICS',
     
     // Fee Type actions
     CREATE_FEE_TYPE: 'CREATE_FEE_TYPE',
@@ -167,4 +169,5 @@ export const EntityTypes = {
     HOUSEHOLD: 'HOUSEHOLD',
     RESIDENT: 'RESIDENT',
     SESSION: 'SESSION',
+    STATISTICS: 'STATISTICS',
 };
