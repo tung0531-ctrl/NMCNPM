@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 import { Button } from './button';
 import {
     DropdownMenu,
@@ -55,7 +55,7 @@ export const BillNotification = () => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5" />
+                    <Wallet className="h-10 w-10" />
                     {unpaidBills.length > 0 && (
                         <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-semibold">
                             {unpaidBills.length}

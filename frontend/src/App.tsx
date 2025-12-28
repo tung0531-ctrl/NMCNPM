@@ -13,6 +13,10 @@ import UserManagementPage from './pages/UserManagementPage';
 import LogViewerPage from './pages/LogViewerPage';
 import StatisticsPage from './pages/StatisticsPage';
 import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
+import SendNotificationPage from './pages/SendNotificationPage';
+import SentNotificationsPage from './pages/SentNotificationsPage';
+import NotificationDetailPage from './pages/NotificationDetailPage';
 import {Toaster} from 'sonner';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
@@ -119,6 +123,34 @@ function App() {
       path = '/profile'
       element = {<ProfilePage/>}
       />
+    <Route
+      path = '/notifications'
+      element = {<NotificationsPage/>}
+    />
+    <Route
+      path = '/send-notification'
+      element = {
+        <AdminRoute>
+          <SendNotificationPage/>
+        </AdminRoute>
+      }
+    />
+    <Route
+      path = '/sent-notifications'
+      element = {
+        <AdminRoute>
+          <SentNotificationsPage/>
+        </AdminRoute>
+      }
+    />
+    <Route
+      path = '/notification-detail'
+      element = {
+        <AdminRoute>
+          <NotificationDetailPage/>
+        </AdminRoute>
+      }
+    />
     </Route>
   </Routes>
 </BrowserRouter>

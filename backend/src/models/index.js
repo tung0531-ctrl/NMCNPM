@@ -4,6 +4,7 @@ import User from './User.js';
 import Resident from './Resident.js';
 import Log from './Log.js';
 import FeeType from './FeeType.js';
+import Notification from './Notification.js';
 
 // Define associations
 Bill.belongsTo(Household, {
@@ -66,4 +67,15 @@ Household.hasOne(User, {
     as: 'user'
 });
 
-export { Bill, Household, User, Resident, Log, FeeType };
+// Notification associations
+User.hasMany(Notification, {
+    foreignKey: 'userId',
+    as: 'notifications'
+});
+
+Notification.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'User'
+});
+
+export { Bill, Household, User, Resident, Log, FeeType, Notification };

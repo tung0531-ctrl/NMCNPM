@@ -11,6 +11,7 @@ import adminRoute from "./routes/adminRoute.js";
 import residentRoute from "./routes/residentRoute.js";
 import logRoute from "./routes/logRoute.js";
 import statisticsRoute from "./routes/statisticsRoute.js";
+import notificationRoute from "./routes/notificationRoute.js";
 import { protectedRoute } from "./middlewares/authMiddleware.js";
 import cookieParser from "cookie-parser";
 
@@ -53,6 +54,7 @@ app.use('/api/households', householdRoute); // Add household route (moved to pro
 app.use('/api/residents', residentRoute); // Add resident route (moved to protected section)
 app.use('/api/logs', logRoute); // Add log route
 app.use('/api/statistics', statisticsRoute); // Add statistics route
+app.use('/api/notifications', notificationRoute); // Add notification route
 
 // Basic error handling
 app.use((err, req, res, next) => {

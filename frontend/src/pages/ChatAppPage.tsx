@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BillNotification } from '@/components/ui/bill-notification';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNavigate } from 'react-router';
+import { useEffect, useState } from 'react';
+import { getUnreadCount } from '@/services/notificationService';
 import { 
   LayoutDashboard, 
   Receipt, 
@@ -13,15 +15,37 @@ import {
   BarChart3, 
   FileText,
   DollarSign,
-  User
+  User,
+  Bell,
+  Send,
+  Inbox
 } from 'lucide-react';
 
 
 const ChatAppPage = () => {
+  const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
+  const isAdmin = user?.role === 'ADMIN';
+  const [unreadCount, setUnreadCount] = useState(0);
 
-const user = useAuthStore((s) => s.user);
-const navigate = useNavigate();
-const isAdmin = user?.role === 'ADMIN';
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const data = await getUnreadCount();
+        setUnreadCount(data.count || 0);
+      } catch (err) {
+        console.error('Error fetching unread count:', err);
+        setUnreadCount(0);
+      }
+    };
+    
+    if (user) {
+      fetchUnreadCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const adminMenuItems = [
     {
@@ -79,6 +103,14 @@ const isAdmin = user?.role === 'ADMIN';
       path: '/logs',
       color: 'text-pink-600',
       bgColor: 'bg-pink-50',
+    },
+    {
+      title: 'Thông Báo Đã Gửi',
+      description: 'Xem và theo dõi thông báo đã gửi',
+      icon: Inbox,
+      path: '/sent-notifications',
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50',
     },
   ];
 
@@ -151,6 +183,29 @@ const isAdmin = user?.role === 'ADMIN';
                   </div>
                   <div className="flex gap-2">
                     {!isAdmin && <BillNotification />}
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate('/notifications')} 
+                      className="h-10 text-base px-4 relative"
+                    >
+                      <Bell className="h-4 w-4 mr-2" />
+                      Thông báo
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </Button>
+                    {isAdmin && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => navigate('/send-notification')} 
+                        className="h-10 text-base px-4"
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Gửi thông báo
+                      </Button>
+                    )}
                     <Button 
                       variant="outline"
                       onClick={() => navigate('/profile')} 
