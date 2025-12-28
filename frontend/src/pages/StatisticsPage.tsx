@@ -174,6 +174,17 @@ const StatisticsPage = () => {
                       Áp dụng
                     </Button>
                     <Button
+                      variant="outline"
+                      onClick={() => {
+                        setDateRange({ startDate: '', endDate: '' });
+                        setTimeout(() => fetchStatistics(), 100);
+                      }}
+                      disabled={loading}
+                      className="h-10 text-base px-6"
+                    >
+                      Đặt lại
+                    </Button>
+                    <Button
                       onClick={async () => {
                         // export CSV using same params as fetch
                         const params = dateRange.startDate && dateRange.endDate ? dateRange : undefined;
@@ -304,17 +315,7 @@ const StatisticsPage = () => {
                     >
                       Xuất báo cáo
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setDateRange({ startDate: '', endDate: '' });
-                        setTimeout(() => fetchStatistics(), 100);
-                      }}
-                      disabled={loading}
-                      className="h-10 text-base px-6"
-                    >
-                      Đặt lại
-                    </Button>
+                    
                   </div>
                 </div>
 
