@@ -59,14 +59,18 @@ export const getAllBills = async (req, res) => {
         if (paymentPeriod) {
             const [year, month] = paymentPeriod.split('-');
             if (year && month) {
-                // Start date: first day of the month at 00:00:00
-                const startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);
-                // End date: last day of the month at 23:59:59
-                const endDate = new Date(year, month, 0, 23, 59, 59, 999);
-                billWhere.billingPeriod = {
-                    [Op.between]: [startDate, endDate]
-                };
-                console.log('Payment period filter:', { startDate, endDate });
+                        // Use YYYY-MM-DD strings to avoid timezone shifts when DB column is DATE
+                        const pad = (v) => String(v).padStart(2, '0');
+                        const y = String(year);
+                        const m = pad(month);
+                        const startDateStr = `${y}-${m}-01`;
+                        // compute last day of month
+                        const lastDay = new Date(Number(year), Number(month), 0).getDate();
+                        const endDateStr = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+                        billWhere.billingPeriod = {
+                            [Op.between]: [startDateStr, endDateStr]
+                        };
+                        console.log('Payment period filter (as strings):', { startDateStr, endDateStr });
             }
         }
         
@@ -264,10 +268,12 @@ export const updateBill = async (req, res) => {
         // Update billing period if provided (format: YYYY-MM)
         if (paymentPeriod !== undefined) {
             const [year, month] = paymentPeriod.split('-');
-            if (year < 1 || month < 1 || month > 12) {
+            const y = Number(year);
+            const m = Number(month);
+            if (!y || !m || m < 1 || m > 12) {
                 return res.status(400).json({ message: 'Sai định dạng ngày tháng. Sử dụng YYYY-MM' });
             }
-            bill.billingPeriod = new Date(year, month, 1);
+            bill.billingPeriod = `${String(y)}-${String(m).padStart(2, '0')}-01`;
         }
 
 
@@ -367,12 +373,17 @@ export const createBill = async (req, res) => {
             });
         }
 
-        // Parse payment period (format: YYYY-MM)
+        // Parse payment period (format: YYYY-MM) and store as YYYY-MM-DD string
         const [year, month] = paymentPeriod.split('-');
         if (!year || !month) {
             return res.status(400).json({ message: 'Invalid payment period format. Use YYYY-MM' });
         }
-        const billingPeriod = new Date(year, month - 1, 1);
+        const y = Number(year);
+        const m = Number(month);
+        if (!y || !m || m < 1 || m > 12) {
+            return res.status(400).json({ message: 'Invalid payment period format. Use YYYY-MM' });
+        }
+        const billingPeriod = `${String(y)}-${String(m).padStart(2, '0')}-01`;
 
         // Find household
         const household = await Household.findByPk(householdId);

@@ -184,7 +184,7 @@ const StatisticsPage = () => {
                           <p className="text-sm text-muted-foreground font-medium">Tổng hóa đơn</p>
                           <p className="text-2xl font-bold text-blue-600">{overall.totalBills}</p>
                           <p className="text-xs text-muted-foreground">
-                            Đã thanh toán: {overall.paidBills} | Chưa thanh toán: {overall.unpaidBills}
+                            Đã thanh toán: {overall.paidBills} | Chưa thanh toán: {overall.unpaidBills} | Thanh toán một phần: {overall.partialBills}
                           </p>
                         </div>
                       </CardContent>

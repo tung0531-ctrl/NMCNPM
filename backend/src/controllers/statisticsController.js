@@ -5,25 +5,23 @@ import FeeType from '../models/FeeType.js';
 import Household from '../models/Household.js';
 import User from '../models/User.js';
 
+// Helper to format a Date to local YYYY-MM-DD string to avoid TZ shifts when comparing with DATE column
+const toLocalDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 // Thống kê theo loại phí
 export const getStatisticsByFeeType = async (req, res) => {
     try {
         let { startDate, endDate } = req.query;
 
-        // Nếu không có startDate và endDate, tự động lấy 12 tháng gần nhất
-        if (!startDate || !endDate) {
-            const now = new Date();
-            endDate = now.toISOString();
-            const twelveMonthsAgo = new Date(now);
-            twelveMonthsAgo.setMonth(now.getMonth() - 12);
-            startDate = twelveMonthsAgo.toISOString();
-        }
+        // Normalize to local YYYY-MM-DD strings to avoid timezone conversion issues
+        const now = new Date();
+        const defaultEnd = toLocalDateStr(now);
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        const defaultStart = toLocalDateStr(twelveMonthsAgo);
 
-        const whereCondition = {
-            billingPeriod: {
-                [Op.between]: [new Date(startDate), new Date(endDate)],
-            },
-        };
+        const startStr = startDate ? toLocalDateStr(new Date(startDate)) : defaultStart;
+        const endStr = endDate ? toLocalDateStr(new Date(endDate)) : defaultEnd;
 
         const feeSql = `
             SELECT
@@ -39,7 +37,7 @@ export const getStatisticsByFeeType = async (req, res) => {
 
         const statistics = await sequelize.query(feeSql, {
             type: QueryTypes.SELECT,
-            replacements: { start: new Date(startDate), end: new Date(endDate) },
+            replacements: { start: startStr, end: endStr },
         });
 
         const feeTypeIds = statistics.map(s => s.feeTypeId).filter(id => id != null);
@@ -77,20 +75,14 @@ export const getStatisticsByHousehold = async (req, res) => {
     try {
         let { startDate, endDate, limit = 10 } = req.query;
 
-        // Nếu không có startDate và endDate, tự động lấy 12 tháng gần nhất
-        if (!startDate || !endDate) {
-            const now = new Date();
-            endDate = now.toISOString();
-            const twelveMonthsAgo = new Date(now);
-            twelveMonthsAgo.setMonth(now.getMonth() - 12);
-            startDate = twelveMonthsAgo.toISOString();
-        }
+        const now = new Date();
+        const defaultEnd = toLocalDateStr(now);
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        const defaultStart = toLocalDateStr(twelveMonthsAgo);
 
-        const whereCondition = {
-            billingPeriod: {
-                [Op.between]: [new Date(startDate), new Date(endDate)],
-            },
-        };
+        const startStr = startDate ? toLocalDateStr(new Date(startDate)) : defaultStart;
+        const endStr = endDate ? toLocalDateStr(new Date(endDate)) : defaultEnd;
 
         const householdSql = `
             SELECT
@@ -107,7 +99,7 @@ export const getStatisticsByHousehold = async (req, res) => {
 
         const statistics = await sequelize.query(householdSql, {
             type: QueryTypes.SELECT,
-            replacements: { start: new Date(startDate), end: new Date(endDate), limit: parseInt(limit) },
+            replacements: { start: startStr, end: endStr, limit: parseInt(limit) },
         });
 
         const householdIds = statistics.map(s => s.householdId).filter(id => id != null);
@@ -144,22 +136,14 @@ export const getStatisticsByHousehold = async (req, res) => {
 export const getStatisticsByCollector = async (req, res) => {
     try {
         let { startDate, endDate } = req.query;
+        const now = new Date();
+        const defaultEnd = toLocalDateStr(now);
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        const defaultStart = toLocalDateStr(twelveMonthsAgo);
 
-        // Nếu không có startDate và endDate, tự động lấy 12 tháng gần nhất
-        if (!startDate || !endDate) {
-            const now = new Date();
-            endDate = now.toISOString();
-            const twelveMonthsAgo = new Date(now);
-            twelveMonthsAgo.setMonth(now.getMonth() - 12);
-            startDate = twelveMonthsAgo.toISOString();
-        }
-
-        const whereCondition = {
-            collectorId: { [Op.not]: null },
-            billingPeriod: {
-                [Op.between]: [new Date(startDate), new Date(endDate)],
-            },
-        };
+        const startStr = startDate ? toLocalDateStr(new Date(startDate)) : defaultStart;
+        const endStr = endDate ? toLocalDateStr(new Date(endDate)) : defaultEnd;
 
         const collectorSql = `
             SELECT
@@ -176,7 +160,7 @@ export const getStatisticsByCollector = async (req, res) => {
 
         const statistics = await sequelize.query(collectorSql, {
             type: QueryTypes.SELECT,
-            replacements: { start: new Date(startDate), end: new Date(endDate) },
+            replacements: { start: startStr, end: endStr },
         });
 
         const collectorIds = statistics.map(s => s.collectorId).filter(id => id != null);
@@ -214,35 +198,38 @@ export const getStatisticsByPaymentStatus = async (req, res) => {
     try {
         let { startDate, endDate } = req.query;
 
-        // Nếu không có startDate và endDate, tự động lấy 12 tháng gần nhất
-        if (!startDate || !endDate) {
-            const now = new Date();
-            endDate = now.toISOString();
-            const twelveMonthsAgo = new Date(now);
-            twelveMonthsAgo.setMonth(now.getMonth() - 12);
-            startDate = twelveMonthsAgo.toISOString();
-        }
+        // Normalize dates to local strings
+        const now = new Date();
+        const defaultEnd = toLocalDateStr(now);
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        const defaultStart = toLocalDateStr(twelveMonthsAgo);
 
-        const whereCondition = {
-            billingPeriod: {
-                [Op.between]: [new Date(startDate), new Date(endDate)],
-            },
-        };
+        const startStr = startDate ? toLocalDateStr(new Date(startDate)) : defaultStart;
+        const endStr = endDate ? toLocalDateStr(new Date(endDate)) : defaultEnd;
 
+        const todayStr = toLocalDateStr(new Date());
+
+        // Derive payment status from amounts; group overdue together with unpaid so frontend shows correct "Chưa thanh toán"
         const paymentSql = `
             SELECT
-                payment_status AS paymentStatus,
+                CASE
+                    WHEN paid_amount >= total_amount AND total_amount > 0 THEN 'PAID'
+                    WHEN paid_amount > 0 AND paid_amount < total_amount THEN 'PARTIAL'
+                    WHEN paid_amount = 0 THEN 'UNPAID'
+                    ELSE 'UNKNOWN'
+                END AS paymentStatus,
                 COUNT(*) AS totalBills,
                 COALESCE(SUM(total_amount), 0) AS totalRevenue,
                 COALESCE(SUM(paid_amount), 0) AS totalPaid
             FROM bills
             WHERE billing_period BETWEEN :start AND :end
-            GROUP BY payment_status
+            GROUP BY paymentStatus
         `;
 
         const statistics = await sequelize.query(paymentSql, {
             type: QueryTypes.SELECT,
-            replacements: { start: new Date(startDate), end: new Date(endDate) },
+            replacements: { start: startStr, end: endStr, today: todayStr },
         });
 
         const formattedStats = statistics.map(stat => ({
@@ -272,20 +259,14 @@ export const getStatisticsByPeriod = async (req, res) => {
     try {
         let { startDate, endDate, groupBy = 'month' } = req.query;
 
-        // Nếu không có startDate và endDate, tự động lấy 12 tháng gần nhất
-        if (!startDate || !endDate) {
-            const now = new Date();
-            endDate = now.toISOString();
-            const twelveMonthsAgo = new Date(now);
-            twelveMonthsAgo.setMonth(now.getMonth() - 12);
-            startDate = twelveMonthsAgo.toISOString();
-        }
+        const now = new Date();
+        const defaultEnd = toLocalDateStr(now);
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        const defaultStart = toLocalDateStr(twelveMonthsAgo);
 
-        const whereCondition = {
-            billingPeriod: {
-                [Op.between]: [new Date(startDate), new Date(endDate)],
-            },
-        };
+        const startStr = startDate ? toLocalDateStr(new Date(startDate)) : defaultStart;
+        const endStr = endDate ? toLocalDateStr(new Date(endDate)) : defaultEnd;
 
         // Build the SQL date format depending on groupBy
         let fmt = '%Y-%m-%d';
@@ -306,7 +287,7 @@ export const getStatisticsByPeriod = async (req, res) => {
 
         const statistics = await sequelize.query(periodSql, {
             type: QueryTypes.SELECT,
-            replacements: { start: new Date(startDate), end: new Date(endDate) },
+            replacements: { start: startStr, end: endStr },
         });
 
         const formattedStats = statistics.map(stat => ({
@@ -335,44 +316,41 @@ export const getStatisticsByPeriod = async (req, res) => {
 export const getOverallStatistics = async (req, res) => {
     try {
         let { startDate, endDate } = req.query;
+        const now = new Date();
+        const defaultEnd = toLocalDateStr(now);
+        const twelveMonthsAgo = new Date(now);
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        const defaultStart = toLocalDateStr(twelveMonthsAgo);
 
-        // Nếu không có startDate và endDate, tự động lấy 12 tháng gần nhất
-        if (!startDate || !endDate) {
-            const now = new Date();
-            endDate = now.toISOString();
-            const twelveMonthsAgo = new Date(now);
-            twelveMonthsAgo.setMonth(now.getMonth() - 12);
-            startDate = twelveMonthsAgo.toISOString();
-        }
+        const startStr = startDate ? toLocalDateStr(new Date(startDate)) : defaultStart;
+        const endStr = endDate ? toLocalDateStr(new Date(endDate)) : defaultEnd;
 
-        const whereCondition = {
-            billingPeriod: {
-                [Op.between]: [new Date(startDate), new Date(endDate)],
-            },
-        };
+        const todayStr = toLocalDateStr(new Date());
 
         const overallSql = `
             SELECT
-                COUNT(*) AS totalBills,
                 COALESCE(SUM(total_amount), 0) AS totalRevenue,
                 COALESCE(SUM(paid_amount), 0) AS totalPaid,
-                SUM(CASE WHEN payment_status = 'PAID' THEN 1 ELSE 0 END) AS paidBills,
-                SUM(CASE WHEN payment_status = 'UNPAID' THEN 1 ELSE 0 END) AS unpaidBills,
-                SUM(CASE WHEN payment_status = 'PARTIAL' THEN 1 ELSE 0 END) AS partialBills
+                SUM(CASE WHEN paid_amount >= total_amount AND total_amount > 0 THEN 1 ELSE 0 END) AS paidBills,
+                SUM(CASE WHEN paid_amount > 0 AND paid_amount < total_amount THEN 1 ELSE 0 END) AS partialBills,
+                SUM(CASE WHEN paid_amount = 0 AND billing_period < :today THEN 1 ELSE 0 END) AS overdueBills,
+                SUM(CASE WHEN paid_amount = 0 AND billing_period >= :today THEN 1 ELSE 0 END) AS unpaidBills
             FROM bills
             WHERE billing_period BETWEEN :start AND :end
         `;
 
         const [overall] = await sequelize.query(overallSql, {
             type: QueryTypes.SELECT,
-            replacements: { start: new Date(startDate), end: new Date(endDate) },
+            replacements: { start: startStr, end: endStr, today: todayStr },
         });
 
-        const totalBills = parseInt(overall.totalBills || 0);
         const paidBills = parseInt(overall.paidBills || 0);
-        const unpaidBills = parseInt(overall.unpaidBills || 0);
         const partialBills = parseInt(overall.partialBills || 0);
-        const otherBills = totalBills - (paidBills + unpaidBills + partialBills);
+        const overdueBills = parseInt(overall.overdueBills || 0);
+        const unpaidNonOverdue = parseInt(overall.unpaidBills || 0);
+        // Combine overdue into unpaid so `overall.unpaidBills` represents all unpaid bills
+        const unpaidBills = overdueBills + unpaidNonOverdue;
+        const totalBills = paidBills + partialBills + unpaidBills;
 
         const formattedOverall = {
             totalBills,
@@ -382,7 +360,8 @@ export const getOverallStatistics = async (req, res) => {
             paidBills,
             unpaidBills,
             partialBills,
-            otherBills: otherBills < 0 ? 0 : otherBills,
+            overdueBills,
+            otherBills: 0,
         };
 
         res.json({
