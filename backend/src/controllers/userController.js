@@ -26,7 +26,7 @@ export const getAllUsers = async (req, res) => {
                 as: 'household',
                 attributes: ['householdId', 'householdCode', 'ownerName', 'address']
             }],
-            order: [['createdAt', 'DESC']]
+            order: [['role', 'ASC'], ['createdAt', 'DESC']]
         });
 
         await createLog(req.user.userId, LogActions.VIEW_ALL_USERS, EntityTypes.USER, null, { count: users.length }, req);

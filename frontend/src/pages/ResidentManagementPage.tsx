@@ -321,10 +321,16 @@ const ResidentManagementPage = () => {
                                                     Họ tên
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-base font-semibold">
+                                                    Số CCCD
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-base font-semibold">
                                                     Hộ khẩu
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-base font-semibold">
                                                     Quan hệ
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-base font-semibold">
+                                                    Nghề nghiệp
                                                 </th>
                                                 <th className="px-4 py-3 text-left text-base font-semibold">
                                                     SĐT
@@ -363,6 +369,9 @@ const ResidentManagementPage = () => {
                                                                 </div>
                                                             )}
                                                         </td>
+                                                        <td className="px-4 py-4 text-base text-muted-foreground">
+                                                            {resident.indentityCardNumber || 'N/A'}
+                                                        </td>
                                                         <td className="px-4 py-4 text-base">
                                                             <div className="font-medium">
                                                                 {resident.household_resident?.householdCode}
@@ -373,6 +382,9 @@ const ResidentManagementPage = () => {
                                                         </td>
                                                         <td className="px-4 py-4 text-base text-muted-foreground">
                                                             {resident.relationToOwner}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-base text-muted-foreground">
+                                                            {resident.job}
                                                         </td>
                                                         <td className="px-4 py-4 text-base text-muted-foreground">
                                                             {resident.phone_number}

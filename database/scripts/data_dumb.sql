@@ -23,7 +23,9 @@ INSERT INTO users (username, password_hash, full_name, email, role, status) VALU
 ('user_phuc', 'hash17', 'Đinh Hồng Phúc', 'phuc.304@gmail.com', 'RESIDENT', 'ACTIVE'),
 ('user_tam', 'hash18', 'Mai Chí Tâm', 'tam.401@gmail.com', 'RESIDENT', 'ACTIVE'),
 ('user_kien', 'hash19', 'Tô Trung Kiên', 'kien.402@gmail.com', 'RESIDENT', 'ACTIVE'),
-('user_vy', 'hash20', 'Nguyễn Thảo Vy', 'vy.403@gmail.com', 'RESIDENT', 'ACTIVE');
+('user_vy', 'hash20', 'Nguyễn Thảo Vy', 'vy.403@gmail.com', 'RESIDENT', 'ACTIVE'),
+('admin', '$2b$10$8fgFxr0oZtlYFCMDC7Tsy.FOmQ0aYuTi5XHvsIWBMxM6SJT6s/x1.', 'Admin', 'admin@gmail.com', 'ADMIN', 'ACTIVE'),
+('user', '$2b$10$8fgFxr0oZtlYFCMDC7Tsy.FOmQ0aYuTi5XHvsIWBMxM6SJT6s/x1.', 'User', 'user@gmail.com', 'RESIDENT', 'ACTIVE');
 -- =============================================
 -- 2. INSERT DATA: HOUSEHOLDS
 -- =============================================

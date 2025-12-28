@@ -77,6 +77,7 @@ const MyResidentsPage = () => {
                                                         <th className="px-4 py-3 text-left text-base font-semibold">Số CCCD</th>
                                                         <th className="px-4 py-3 text-left text-base font-semibold">Ngày sinh</th>
                                                         <th className="px-4 py-3 text-left text-base font-semibold">Quan hệ với chủ hộ</th>
+                                                        <th className="px-4 py-3 text-left text-base font-semibold">Nghề nghiệp</th>
                                                         <th className="px-4 py-3 text-left text-base font-semibold">Số điện thoại</th>
                                                         <th className="px-4 py-3 text-left text-base font-semibold">Trạng thái</th>
                                                     </tr>
@@ -97,11 +98,14 @@ const MyResidentsPage = () => {
                                                                 {resident.relationToOwner || 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
+                                                                {resident.job || 'N/A'}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base">
                                                                 {resident.phone_number || 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
-                                                                <span className={`px-2 py-1 rounded-full text-sm ${resident.isStaying ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                                                                    {resident.isStaying ? 'Đang ở' : 'Tạm vắng'}
+                                                                <span className={`px-2 py-1 rounded-full text-sm ${resident.isStaying ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-800'}`}>
+                                                                    {resident.isStaying ? 'Đang ở' : 'Đã chuyển đi'}
                                                                 </span>
                                                             </td>
                                                         </tr>

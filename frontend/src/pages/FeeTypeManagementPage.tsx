@@ -505,7 +505,7 @@ const FeeTypeManagementPage = () => {
                                     </Card>
                                     <Card className="border-border">
                                         <CardContent className="p-4">
-                                            <p className="text-base text-muted-foreground">Đang hoạt động</p>
+                                            <p className="text-base text-muted-foreground">Đang hoạt động (Trong trang hiện tại)</p>
                                             <p className="text-2xl font-bold text-green-600">
                                                 {feeTypes.filter(ft => ft.isActive !== false).length}
                                             </p>

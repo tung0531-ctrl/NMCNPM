@@ -646,7 +646,7 @@ const BillManagementPage = () => {
                                     </Card>
                                     <Card className="border-border">
                                         <CardContent className="p-4">
-                                            <p className="text-base text-muted-foreground">Đã thanh toán</p>
+                                            <p className="text-base text-muted-foreground">Đã thanh toán (Trong trang hiện tại)</p>
                                             <p className="text-2xl font-bold text-green-600">
                                                 {bills.filter(b => b.status === 'Đã thanh toán').length}
                                             </p>

@@ -45,7 +45,7 @@ export const getAllHouseholds = async (req, res) => {
         }
 
         const households = await Household.findAll({
-            order: [['ownerName', 'ASC']]
+            order: [['createdAt', 'DESC']]
         });
 
         // Log admin viewing all households
@@ -99,7 +99,7 @@ export const getAllHouseholdsForAdmin = async (req, res) => {
             where,
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [['householdId', 'DESC']]
+            order: [['createdAt', 'DESC']]
         });
 
         // Log view all households activity

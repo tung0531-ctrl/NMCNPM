@@ -93,11 +93,20 @@ const LogViewerPage = () => {
   const getBrowserName = (userAgent: string | null) => {
     if (!userAgent) return "-";
     
+    // 1. Kiểm tra các trình duyệt có nhân tùy biến TRƯỚC (Thứ tự ưu tiên cao)
     if (userAgent.includes("Edg")) return "Edge";
-    if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) return "Chrome";
-    if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return "Safari";
+    if (userAgent.includes("OPR") || userAgent.includes("Opera")) return "Opera";
+    if (userAgent.includes("coc_coc_browser")) return "Cốc Cốc"; // Rất phổ biến tại VN
+    if (userAgent.includes("Brave")) return "Brave";
+
+    // 2. Kiểm tra Chrome (Sau khi đã loại trừ Edge, Opera, Cốc Cốc)
+    if (userAgent.includes("Chrome")) return "Chrome";
+
+    // 3. Kiểm tra Firefox (Đứng đâu cũng được vì nó khá biệt lập)
     if (userAgent.includes("Firefox")) return "Firefox";
-    if (userAgent.includes("Opera") || userAgent.includes("OPR")) return "Opera";
+
+    // 4. Kiểm tra Safari (Phải để sau Chrome vì Chrome UA cũng chứa chữ Safari)
+    if (userAgent.includes("Safari")) return "Safari";
     
     return "Khác";
   };
