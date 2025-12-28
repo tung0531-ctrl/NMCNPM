@@ -623,7 +623,7 @@ const UserManagementPage = () => {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="create-household">Hộ gia đình</Label>
+              <Label htmlFor="edit-household">Hộ gia đình</Label>
               <select
                 id="create-household"
                 aria-label="Chọn hộ gia đình"
@@ -632,17 +632,15 @@ const UserManagementPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, householdId: e.target.value ? Number(e.target.value) : null })
                 }
-              >
+                onFocus={fetchHouseholds}
+                >
                 <option value="">-- Không gán hộ gia đình --</option>
-                {households
-                  .filter(h => !users.some(u => u.householdId === h.householdId))
-                  .map((household) => (
-                    <option key={household.householdId} value={household.householdId}>
-                      {household.householdCode} - {household.ownerName}
-                    </option>
+                {households.map((household) => (
+                  <option key={household.householdId} value={household.householdId}>
+                    {household.householdCode} - {household.ownerName}
+                  </option>
                   ))}
-              </select>
-              <p className="text-xs text-muted-foreground">Chỉ hiển thị các hộ gia đình chưa được gán cho người dùng khác</p>
+                </select>
             </div>
           </div>
           <DialogFooter>
@@ -749,24 +747,22 @@ const UserManagementPage = () => {
             <div className="grid gap-2">
               <Label htmlFor="edit-household">Hộ gia đình</Label>
               <select
-                id="edit-household"
+                id="create-household"
                 aria-label="Chọn hộ gia đình"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.householdId || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, householdId: e.target.value ? Number(e.target.value) : null })
                 }
-              >
+                onFocus={fetchHouseholds}
+                >
                 <option value="">-- Không gán hộ gia đình --</option>
-                {households
-                  .filter(h => !users.some(u => u.householdId === h.householdId && u.userId !== selectedUser?.userId))
-                  .map((household) => (
-                    <option key={household.householdId} value={household.householdId}>
-                      {household.householdCode} - {household.ownerName}
-                    </option>
+                {households.map((household) => (
+                  <option key={household.householdId} value={household.householdId}>
+                    {household.householdCode} - {household.ownerName}
+                  </option>
                   ))}
-              </select>
-              <p className="text-xs text-muted-foreground">Chỉ hiển thị các hộ gia đình chưa được gán cho người dùng khác</p>
+                </select>
             </div>
           </div>
           <DialogFooter>

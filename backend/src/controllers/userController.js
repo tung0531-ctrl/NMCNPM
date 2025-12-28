@@ -89,15 +89,15 @@ export const createUser = async (req, res) => {
         }
 
         // If householdId provided, check if it's already linked to another user
-        if (householdId) {
-            const householdInUse = await User.findOne({
-                where: { householdId }
-            });
+        // if (householdId) {
+        //     const householdInUse = await User.findOne({
+        //         where: { householdId }
+        //     });
             
-            if (householdInUse) {
-                return res.status(400).json({ message: "Hộ gia đình này đã được gán cho người dùng khác." });
-            }
-        }
+        //     if (householdInUse) {
+        //         return res.status(400).json({ message: "Hộ gia đình này đã được gán cho người dùng khác." });
+        //     }
+        // }
 
         // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
@@ -172,20 +172,20 @@ export const updateUser = async (req, res) => {
         }
 
         // If householdId is being changed, check if it's already linked to another user
-        if (householdId !== undefined && householdId !== user.householdId) {
-            if (householdId) {
-                const householdInUse = await User.findOne({
-                    where: { 
-                        householdId,
-                        userId: { [Op.ne]: id }
-                    }
-                });
+        // if (householdId !== undefined && householdId !== user.householdId) {
+        //     if (householdId) {
+        //         const householdInUse = await User.findOne({
+        //             where: { 
+        //                 householdId,
+        //                 userId: { [Op.ne]: id }
+        //             }
+        //         });
                 
-                if (householdInUse) {
-                    return res.status(400).json({ message: "Hộ gia đình này đã được gán cho người dùng khác." });
-                }
-            }
-        }
+        //         if (householdInUse) {
+        //             return res.status(400).json({ message: "Hộ gia đình này đã được gán cho người dùng khác." });
+        //         }
+        //     }
+        // }
 
         const updateData = {};
         const oldValues = {};
