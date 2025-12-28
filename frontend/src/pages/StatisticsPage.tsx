@@ -72,7 +72,19 @@ const StatisticsPage = () => {
       setByFeeType(feeTypeData.data);
       setByHousehold(householdData.data);
       setByCollector(collectorData.data);
-      setByPaymentStatus(paymentStatusData.data);
+      // Map payment status codes to Vietnamese labels for display
+      const statusMap: Record<string, string> = {
+        PAID: 'Đã thanh toán',
+        PARTIAL: 'Thanh toán một phần',
+        UNPAID: 'Chưa thanh toán',
+        OVERDUE: 'Quá hạn',
+        UNKNOWN: 'Không xác định',
+      };
+      const mappedPaymentStatus = paymentStatusData.data.map((p: any) => ({
+        ...p,
+        paymentStatus: statusMap[p.paymentStatus] || p.paymentStatus,
+      }));
+      setByPaymentStatus(mappedPaymentStatus);
       setByPeriod(periodData.data);
     } catch (error) {
       console.error('Error fetching statistics:', error);
@@ -160,6 +172,137 @@ const StatisticsPage = () => {
                   <div className="flex gap-2">
                     <Button onClick={handleApplyFilter} disabled={loading} className="h-10 text-base px-6">
                       Áp dụng
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        // export CSV using same params as fetch
+                        const params = dateRange.startDate && dateRange.endDate ? dateRange : undefined;
+                        try {
+                          setLoading(true);
+                          const [overallData, feeTypeData, householdData, collectorData, paymentStatusData, periodData] =
+                            await Promise.all([
+                              getOverallStatistics(params),
+                              getStatisticsByFeeType(params),
+                              getStatisticsByHousehold({ ...params, limit: 1000 }),
+                              getStatisticsByCollector(params),
+                              getStatisticsByPaymentStatus(params),
+                              getStatisticsByPeriod({ ...params, groupBy: 'month' }),
+                            ]);
+
+                          const pad = (v: number) => String(v).padStart(2, '0');
+                          const toDateRange = (range: { startDate: string; endDate: string } | undefined) => {
+                            if (!range || !range.startDate || !range.endDate) {
+                              // default: last 12 months (approx) - use today and 12 months ago
+                              const now = new Date();
+                              const end = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+                              const d = new Date(now);
+                              d.setMonth(now.getMonth() - 12);
+                              const start = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+                              return { start, end };
+                            }
+                            // if inputs are month strings like YYYY-MM, convert to day range
+                            const parseToDay = (s: string, isStart: boolean) => {
+                              if (/^\d{4}-\d{2}$/.test(s)) {
+                                const [y, m] = s.split('-').map(Number);
+                                if (isStart) return `${y}-${pad(m)}-01`;
+                                const last = new Date(y, m, 0).getDate();
+                                return `${y}-${pad(m)}-${pad(last)}`;
+                              }
+                              // assume already YYYY-MM-DD
+                              return s;
+                            };
+                            return {
+                              start: parseToDay(range.startDate, true),
+                              end: parseToDay(range.endDate, false),
+                            };
+                          };
+
+                          const dr = toDateRange(dateRange.startDate && dateRange.endDate ? dateRange : undefined);
+
+                          const lines: string[] = [];
+                          // Header/meta
+                          lines.push(`Tòa nhà,${'Bluemoon'}`);
+                          lines.push(`Ngày xuất,${new Date().toLocaleString()}`);
+                          lines.push(`Khoảng thời gian,${dr.start} đến ${dr.end}`);
+                          lines.push('');
+
+                          // Overall
+                          const overall = overallData.data;
+                          lines.push('--- Tổng quan ---');
+                          lines.push('Tổng hóa đơn,Tổng doanh thu,Đã thu,Chưa thu,Đã thanh toán,Chưa thanh toán,Thanh toán một phần');
+                          lines.push(`${overall.totalBills},${overall.totalRevenue},${overall.totalPaid},${overall.unpaidAmount},${overall.paidBills},${overall.unpaidBills},${overall.partialBills}`);
+                          lines.push('');
+
+                          // By Fee Type
+                          lines.push('--- Theo loại phí ---');
+                          lines.push('Loại phí,Tổng hóa đơn,Tổng doanh thu,Đã thu,Chưa thu');
+                          feeTypeData.data.forEach((f: any) => {
+                            lines.push(`"${f.feeTypeName}",${f.totalBills},${f.totalRevenue},${f.totalPaid},${f.unpaidAmount}`);
+                          });
+                          lines.push('');
+
+                          // By Household
+                          lines.push('--- Theo hộ gia đình ---');
+                          lines.push('Hộ gia đình,Tổng hóa đơn,Tổng doanh thu,Đã thu,Chưa thu');
+                          householdData.data.forEach((h: any) => {
+                            lines.push(`"${h.householdName}",${h.totalBills},${h.totalRevenue},${h.totalPaid},${h.unpaidAmount}`);
+                          });
+                          lines.push('');
+
+                          // By Collector
+                          lines.push('--- Theo người thu ---');
+                          lines.push('Người thu,Tổng hóa đơn,Tổng doanh thu,Đã thu,Chưa thu');
+                          collectorData.data.forEach((c: any) => {
+                            lines.push(`"${c.collectorName}",${c.totalBills},${c.totalRevenue},${c.totalPaid},${c.unpaidAmount}`);
+                          });
+                          lines.push('');
+
+                          // By Payment Status
+                          lines.push('--- Theo trạng thái thanh toán ---');
+                          lines.push('Trạng thái,Tổng hóa đơn,Tổng doanh thu,Đã thu,Chưa thu');
+                          // Map payment status to Vietnamese for CSV as well
+                          const statusMapCsv: Record<string, string> = {
+                            PAID: 'Đã thanh toán',
+                            PARTIAL: 'Thanh toán một phần',
+                            UNPAID: 'Chưa thanh toán',
+                            OVERDUE: 'Quá hạn',
+                            UNKNOWN: 'Không xác định',
+                          };
+                          paymentStatusData.data.forEach((p: any) => {
+                            const label = statusMapCsv[p.paymentStatus] || p.paymentStatus;
+                            lines.push(`"${label}",${p.totalBills},${p.totalRevenue},${p.totalPaid},${p.unpaidAmount}`);
+                          });
+                          lines.push('');
+
+                          // By Period
+                          lines.push('--- Theo kỳ ---');
+                          lines.push('Kỳ,Tổng hóa đơn,Tổng doanh thu,Đã thu,Chưa thu');
+                          periodData.data.forEach((pd: any) => {
+                            lines.push(`"${pd.period}",${pd.totalBills},${pd.totalRevenue},${pd.totalPaid},${pd.unpaidAmount}`);
+                          });
+
+                          // Prepend UTF-8 BOM so Excel on Windows shows Vietnamese correctly
+                          const csv = '\uFEFF' + lines.join('\r\n');
+                          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          const filename = `Revenue_Bluemoon_${dr.start}_${dr.end}.csv`;
+                          a.href = url;
+                          a.setAttribute('download', filename);
+                          document.body.appendChild(a);
+                          a.click();
+                          a.remove();
+                          URL.revokeObjectURL(url);
+                        } catch (err) {
+                          console.error('Export error', err);
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      variant="outline"
+                      className="h-10 text-base px-6"
+                    >
+                      Xuất báo cáo
                     </Button>
                     <Button
                       variant="outline"
