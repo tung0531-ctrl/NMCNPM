@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getMyHousehold, type Household } from '@/services/householdService';
 import { toast } from 'sonner';
+import { formatUTCToLocal } from '@/lib/formatDate';
 
 const MyHouseholdPage = () => {
     const navigate = useNavigate();
@@ -95,7 +96,7 @@ const MyHouseholdPage = () => {
                                                             {household.areaSqm || 'N/A'}
                                                         </td>
                                                         <td className="px-4 py-4 text-base">
-                                                            {household.createdAt ? new Date(household.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+                                                            {household.createdAt ? formatUTCToLocal(household.createdAt, 'vi-VN') : 'N/A'}
                                                         </td>
                                                     </tr>
                                                 </tbody>

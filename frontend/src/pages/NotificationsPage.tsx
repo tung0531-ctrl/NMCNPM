@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getMyNotifications, markAsRead, type Notification } from '@/services/notificationService';
 import { toast } from 'sonner';
+import { formatUTCToLocal } from '@/lib/formatDate';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -97,13 +98,7 @@ const NotificationsPage = () => {
                                 {notification.message}
                               </p>
                               <p className="text-sm text-muted-foreground mt-3">
-                                {new Date(notification.createdAt).toLocaleString('vi-VN', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
+                                {formatUTCToLocal(notification.createdAt, 'vi-VN', { month: 'long' })}
                               </p>
                             </div>
                             {!notification.isRead && (

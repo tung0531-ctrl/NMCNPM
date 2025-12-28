@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getNotificationRecipients, type NotificationRecipient } from '@/services/notificationService';
 import { toast } from 'sonner';
 import { ArrowLeft, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { formatUTCToLocal } from '@/lib/formatDate';
 
 const NotificationDetailPage = () => {
   const navigate = useNavigate();
@@ -37,17 +38,7 @@ const NotificationDetailPage = () => {
     fetchRecipients();
   }, []);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
+  const formatDate = (dateString: string) => formatUTCToLocal(dateString, 'vi-VN', { second: '2-digit' });
 
   const readRecipients = recipients.filter(r => r.isRead);
   const unreadRecipients = recipients.filter(r => !r.isRead);

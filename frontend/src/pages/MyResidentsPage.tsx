@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getResidentsForCurrentUser, type Resident } from '@/services/residentService';
 import { toast } from 'sonner';
+import { formatUTCToLocal } from '@/lib/formatDate';
 
 const MyResidentsPage = () => {
     const navigate = useNavigate();
@@ -92,7 +93,7 @@ const MyResidentsPage = () => {
                                                                 {resident.indentityCardNumber || 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
-                                                                {resident.dateOfBirth ? new Date(resident.dateOfBirth).toLocaleDateString('vi-VN') : 'N/A'}
+                                                                {resident.dateOfBirth ? formatUTCToLocal(resident.dateOfBirth, 'vi-VN') : 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
                                                                 {resident.relationToOwner || 'N/A'}

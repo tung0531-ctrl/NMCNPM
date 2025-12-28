@@ -38,6 +38,7 @@ import {
     type CreateResidentData,
     type UpdateResidentData
 } from '@/services/residentService';
+import { formatUTCToLocal } from '@/lib/formatDate';
 import { getAllHouseholds, type Household } from '@/services/householdService';
 import { useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
@@ -365,7 +366,7 @@ const ResidentManagementPage = () => {
                                                             </div>
                                                             {resident.dateOfBirth && (
                                                                 <div className="text-muted-foreground text-sm">
-                                                                    {new Date(resident.dateOfBirth).toLocaleDateString('vi-VN')}
+                                                                    {formatUTCToLocal(resident.dateOfBirth, 'vi-VN')}
                                                                 </div>
                                                             )}
                                                         </td>

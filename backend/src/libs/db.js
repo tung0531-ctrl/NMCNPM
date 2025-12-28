@@ -13,6 +13,7 @@ const sslConfig = process.env.DB_SSL === 'true' ? {
 export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
     dialect: 'mysql',
     logging: false,
+    timezone: '+00:00', // Lưu tất cả timestamp dưới dạng UTC
     pool: {
         max: 10,
         min: 0,
@@ -21,8 +22,6 @@ export const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING, {
     },
     dialectOptions: {
         connectTimeout: 60000,
-        dateStrings: true,
-        typeCast: true,
         ssl: sslConfig
     },
     define: {

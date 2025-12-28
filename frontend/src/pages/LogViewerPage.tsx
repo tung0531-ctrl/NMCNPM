@@ -6,6 +6,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";import { useNavigate } from "react-router";
+import { formatUTCToLocal } from '@/lib/formatDate';
 const LogViewerPage = () => {
   const navigate = useNavigate();
   const [logs, setLogs] = useState<Log[]>([]);
@@ -62,32 +63,9 @@ const LogViewerPage = () => {
   };
 
   const formatDate = (dateString: string | undefined | null) => {
-    if (!dateString) {
-      console.warn('formatDate received empty dateString:', dateString);
-      return '-';
-    }
-    
-    try {
-      const date = new Date(dateString);
-      
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        console.error('Invalid date:', dateString);
-        return '-';
-      }
-      
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      const seconds = date.getSeconds().toString().padStart(2, '0');
-      
-      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    } catch (error) {
-      console.error('Error formatting date:', dateString, error);
-      return '-';
-    }
+    if (!dateString) return '-';
+    const out = formatUTCToLocal(dateString, 'vi-VN', { second: '2-digit' });
+    return out || '-';
   };
 
   const getBrowserName = (userAgent: string | null) => {

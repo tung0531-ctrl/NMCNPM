@@ -111,23 +111,26 @@ const SendNotificationPage = () => {
                         <p className="text-muted-foreground">Đang tải...</p>
                       ) : (
                         <div className="space-y-2 max-h-96 overflow-y-auto">
-                          {users.map((user) => (
-                            <label
-                              key={user.userId}
-                              className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-muted/50"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedUserIds.includes(user.userId)}
-                                onChange={() => handleToggleUser(user.userId)}
-                                className="w-4 h-4"
-                              />
-                              <div className="flex-1">
-                                <p className="font-medium">{user.fullName}</p>
-                                <p className="text-sm text-muted-foreground">{user.username}</p>
-                              </div>
-                            </label>
-                          ))}
+                          {users.map((user) => {
+                            const selected = selectedUserIds.includes(user.userId);
+                            return (
+                              <label
+                                key={user.userId}
+                                className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ease-in-out ${selected ? 'bg-blue-50 border-blue-300 rounded-lg shadow-sm' : 'rounded-md hover:bg-muted/50 border-border'}`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selected}
+                                  onChange={() => handleToggleUser(user.userId)}
+                                  className="w-4 h-4 accent-blue-600"
+                                />
+                                <div className="flex-1">
+                                  <p className="font-medium">{user.fullName}</p>
+                                  <p className="text-sm text-muted-foreground">{user.username}</p>
+                                </div>
+                              </label>
+                            );
+                          })}
                         </div>
                       )}
                     </CardContent>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getSentNotifications, type SentNotification } from '@/services/notificationService';
 import { toast } from 'sonner';
 import { ArrowLeft, Eye, RefreshCw } from 'lucide-react';
+import { formatUTCToLocal } from '@/lib/formatDate';
 
 const SentNotificationsPage = () => {
   const navigate = useNavigate();
@@ -38,16 +39,7 @@ const SentNotificationsPage = () => {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const formatDate = (dateString: string) => formatUTCToLocal(dateString, 'vi-VN');
 
   const getReadPercentage = (readCount: number, total: number) => {
     return total > 0 ? Math.round((readCount / total) * 100) : 0;
@@ -64,13 +56,7 @@ const SentNotificationsPage = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div className="flex items-center gap-4">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => navigate('/')}
-                    >
-                      <ArrowLeft className="h-5 w-5" />
-                    </Button>
+                    
                     <div>
                       <h1 className="text-3xl font-bold">Thông báo đã gửi</h1>
                       <p className="text-base text-muted-foreground mt-1">
@@ -89,6 +75,14 @@ const SentNotificationsPage = () => {
                     </Button>
                     <Button onClick={() => navigate('/send-notification')}>
                       Gửi thông báo mới
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate('/')}
+                        className="inline-flex items-center px-3 py-2"
+                    >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Về trang chủ
                     </Button>
                   </div>
                 </div>

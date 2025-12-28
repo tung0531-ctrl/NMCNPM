@@ -38,6 +38,7 @@ import {
     type UpdateHouseholdData
 } from '@/services/householdService';
 import { useNavigate } from 'react-router';
+import { formatUTCToLocal } from '@/lib/formatDate';
 import { useForm } from 'react-hook-form';
 import { MoreVertical, Pencil, Plus, Trash2, Users } from 'lucide-react';
 
@@ -316,7 +317,7 @@ const HouseholdManagementPage = () => {
                                                                 {household.areaSqm || 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
-                                                                {household.createdAt ? new Date(household.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+                                                                {household.createdAt ? formatUTCToLocal(household.createdAt, 'vi-VN') : 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-right">
                                                                 <DropdownMenu>

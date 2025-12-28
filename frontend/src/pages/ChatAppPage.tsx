@@ -89,6 +89,14 @@ const ChatAppPage = () => {
       bgColor: 'bg-indigo-50',
     },
     {
+      title: 'Thông Báo Đã Gửi',
+      description: 'Xem và theo dõi thông báo đã gửi',
+      icon: Inbox,
+      path: '/sent-notifications',
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50',
+    },
+    {
       title: 'Thống Kê Doanh Thu',
       description: 'Xem báo cáo và biểu đồ thống kê',
       icon: BarChart3,
@@ -104,14 +112,7 @@ const ChatAppPage = () => {
       color: 'text-pink-600',
       bgColor: 'bg-pink-50',
     },
-    {
-      title: 'Thông Báo Đã Gửi',
-      description: 'Xem và theo dõi thông báo đã gửi',
-      icon: Inbox,
-      path: '/sent-notifications',
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
-    },
+    
   ];
 
   const residentMenuItems = [
@@ -183,19 +184,21 @@ const ChatAppPage = () => {
                   </div>
                   <div className="flex gap-2">
                     {!isAdmin && <BillNotification />}
-                    <Button 
-                      variant="outline"
-                      onClick={() => navigate('/notifications')} 
-                      className="h-10 text-base px-4 relative"
-                    >
-                      <Bell className="h-4 w-4 mr-2" />
-                      Thông báo
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </span>
-                      )}
-                    </Button>
+                    {!isAdmin && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => navigate('/notifications')} 
+                        className="h-10 text-base px-4 relative"
+                      >
+                        <Bell className="h-4 w-4 mr-2" />
+                        Thông báo
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </Button>
+                    )}
                     {isAdmin && (
                       <Button 
                         variant="outline"
