@@ -11,10 +11,18 @@ import { useNavigate } from "react-router";
 
 
 const signUpSchema = z.object({
-  firstname: z.string().min(1, 'Tên bắt buộc phải có'),
-  lastname: z.string().min(1, 'Họ bắt buộc phải có'),
+  firstname: z
+    .string()
+    .min(1, 'Tên bắt buộc phải có')
+    .regex(/^[a-zA-ZÀ-ỹ\s]+$/, 'Tên chỉ được chứa chữ cái và khoảng cách'),
+  
+  lastname: z
+    .string()
+    .min(1, 'Họ bắt buộc phải có')
+    .regex(/^[a-zA-ZÀ-ỹ\s]+$/, 'Họ chỉ được chứa chữ cái và khoảng cách'),
+
   username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 kí tự'),
-  email: z.string().email("Email không hợp lệ"),////////khác với mẫu
+  email: z.string().email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu phải có ít nhất 6 kí tự")
 });
 
