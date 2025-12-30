@@ -559,7 +559,9 @@ const FeeTypeManagementPage = () => {
                                     <Label htmlFor="edit-unit">Đơn vị</Label>
                                     <Input
                                         id="edit-unit"
-                                        {...register('unit')}
+                                        {...register('unit', {
+                                            require: 'Đơn vị là bắt buộc'
+                                        })}
                                         placeholder="VD: tháng, người, m²..."
                                     />
                                 </div>
@@ -646,7 +648,9 @@ const FeeTypeManagementPage = () => {
                                     <Label htmlFor="create-unit">Đơn vị</Label>
                                     <Input
                                         id="create-unit"
-                                        {...registerCreate('unit')}
+                                        {...registerCreate('unit', {
+                                            require: 'Đơn vị là bắt buộc'
+                                        })}
                                         placeholder="VD: tháng, người, m²..."
                                     />
                                 </div>
