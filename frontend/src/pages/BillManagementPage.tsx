@@ -307,7 +307,7 @@ const BillManagementPage = () => {
                                 {/* Header */}
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-2">
-                                        <h1 className="text-3xl font-bold">Quản lý khoản thu</h1>
+                                        <h1 className="text-3xl font-bold">Quản Lý Hóa Đơn</h1>
                                         <p className="text-base text-muted-foreground">
                                             Theo dõi và quản lý các khoản thu phí của hộ gia đình
                                         </p>

@@ -48,7 +48,7 @@ const Bill = sequelize.define('Bill', {
     },
     feeTypeId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         field: 'fee_type_id',
     },
     collectorId: {

@@ -347,13 +347,13 @@ const ResidentManagementPage = () => {
                                         <tbody className="divide-y divide-border">
                                             {loading ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                                                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                                                         Đang tải...
                                                     </td>
                                                 </tr>
                                             ) : residents.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                                                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                                                         Không tìm thấy cư dân nào
                                                     </td>
                                                 </tr>

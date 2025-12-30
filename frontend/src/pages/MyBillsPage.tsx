@@ -49,7 +49,7 @@ const MyBillsPage = () => {
                                 {/* Header */}
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-2">
-                                        <h1 className="text-3xl font-bold">Khoản thu của hộ</h1>
+                                        <h1 className="text-3xl font-bold">Hóa đơn của hộ</h1>
                                         <p className="text-base text-muted-foreground">
                                             Danh sách hóa đơn gắn với mã hộ của bạn
                                         </p>
