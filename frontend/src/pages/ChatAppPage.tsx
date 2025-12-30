@@ -57,7 +57,7 @@ const ChatAppPage = () => {
       bgColor: 'bg-blue-50',
     },
     {
-      title: 'Quản Lý Khoản Thu',
+      title: 'Quản Lý Hóa Đơn',
       description: 'Xem và quản lý các hóa đơn thu phí',
       icon: Receipt,
       path: '/bills',
