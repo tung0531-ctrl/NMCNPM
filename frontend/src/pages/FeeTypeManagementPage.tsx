@@ -560,10 +560,13 @@ const FeeTypeManagementPage = () => {
                                     <Input
                                         id="edit-unit"
                                         {...register('unit', {
-                                            require: 'Đơn vị là bắt buộc'
+                                            required: 'Đơn vị là bắt buộc'
                                         })}
                                         placeholder="VD: tháng, người, m²..."
                                     />
+                                    {errors.unit && (
+                                        <p className="text-sm text-red-600">{errors.unit.message}</p>
+                                    )}
                                 </div>
 
                                 <div className="grid gap-2">
@@ -649,10 +652,13 @@ const FeeTypeManagementPage = () => {
                                     <Input
                                         id="create-unit"
                                         {...registerCreate('unit', {
-                                            require: 'Đơn vị là bắt buộc'
+                                            required: 'Đơn vị là bắt buộc'
                                         })}
                                         placeholder="VD: tháng, người, m²..."
                                     />
+                                    {errorsCreate.unit && (
+                                        <p className="text-sm text-red-600">{errorsCreate.unit.message}</p>
+                                    )}
                                 </div>
 
                                 <div className="grid gap-2">
