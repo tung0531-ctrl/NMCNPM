@@ -530,7 +530,13 @@ const HouseholdManagementPage = () => {
                                         <Label htmlFor="edit-ownerName">Tên chủ hộ</Label>
                                         <Input
                                             id="edit-ownerName"
-                                            {...register('ownerName', { required: 'Tên chủ hộ là bắt buộc' })}
+                                            {...register('ownerName', { 
+                                                required: 'Tên chủ hộ là bắt buộc',
+                                                pattern: {
+                                                    value: /^[a-zA-ZÀ-ỿ\s]+$/,
+                                                    message: 'Tên chủ hộ chỉ được chứa chữ và khoảng cách'
+                                                }
+                                            })}
                                             placeholder="Nhập tên chủ hộ"
                                         />
                                         {errors.ownerName && (
@@ -609,7 +615,13 @@ const HouseholdManagementPage = () => {
                                         <Label htmlFor="create-ownerName">Tên chủ hộ</Label>
                                         <Input
                                             id="create-ownerName"
-                                            {...register('ownerName', { required: 'Tên chủ hộ là bắt buộc' })}
+                                            {...register('ownerName', { 
+                                                required: 'Tên chủ hộ là bắt buộc',
+                                                pattern: {
+                                                    value: /^[a-zA-ZÀ-ỿ\s]+$/,
+                                                    message: 'Tên chủ hộ chỉ được chứa chữ và khoảng cách'
+                                                }
+                                            })}
                                             placeholder="Nhập tên chủ hộ..."
                                         />
                                         {errors.ownerName && (
