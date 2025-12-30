@@ -93,7 +93,11 @@ const MyResidentsPage = () => {
                                                                 {resident.indentityCardNumber || 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
-                                                                {resident.dateOfBirth ? formatUTCToLocal(resident.dateOfBirth, 'vi-VN') : 'N/A'}
+                                                                {resident.dateOfBirth ? new Date(resident.dateOfBirth).toLocaleDateString('vi-VN', {
+                                                                    day: '2-digit',
+                                                                    month: '2-digit',
+                                                                    year: 'numeric'
+                                                                }) : 'N/A'}
                                                             </td>
                                                             <td className="px-4 py-4 text-base">
                                                                 {resident.relationToOwner || 'N/A'}

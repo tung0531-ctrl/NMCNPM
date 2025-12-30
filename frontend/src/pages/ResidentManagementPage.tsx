@@ -91,7 +91,7 @@ const ResidentManagementPage = () => {
         } catch (err: any) {
             const error = err as { response?: { status: number, data?: { message: string } }, message: string };
             console.error('Error fetching residents:', error);
-            
+
             if (error.response?.status === 401) {
                 toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
                 navigate('/signin');
@@ -114,7 +114,7 @@ const ResidentManagementPage = () => {
         } catch (err: any) {
             console.error('Error fetching households:', err);
             const error = err as { response?: { status: number, data?: { message: string } }, message: string };
-            
+
             if (error.response?.status === 401) {
                 toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
                 navigate('/signin');
@@ -229,7 +229,7 @@ const ResidentManagementPage = () => {
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button style={{color: 'red'}} variant="outline" onClick={() => navigate('/households')} className="h-10 text-base px-4">
+                                        <Button style={{ color: 'red' }} variant="outline" onClick={() => navigate('/households')} className="h-10 text-base px-4">
                                             Quản lý Hộ gia đình
                                         </Button>
                                         <Button onClick={() => setIsCreateDialogOpen(true)} className="h-10 text-base px-4">
@@ -310,125 +310,128 @@ const ResidentManagementPage = () => {
                                         Xóa bộ lọc
                                     </Button>
                                 </div>
-                                    
+
 
                                 {/* Residents List */}
                                 <div className="rounded-lg border border-border overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full">
-                                        <thead className="bg-muted">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    Họ tên
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    Số CCCD
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    Hộ khẩu
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    Quan hệ
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    Nghề nghiệp
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    SĐT
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-base font-semibold">
-                                                    Trạng thái
-                                                </th>
-                                                <th className="px-4 py-3 text-right text-base font-semibold">
-                                                    Thao tác
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            {loading ? (
+                                            <thead className="bg-muted">
                                                 <tr>
-                                                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                                                        Đang tải...
-                                                    </td>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        Họ tên
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        Số CCCD
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        Hộ khẩu
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        Quan hệ
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        Nghề nghiệp
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        SĐT
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-base font-semibold">
+                                                        Trạng thái
+                                                    </th>
+                                                    <th className="px-4 py-3 text-right text-base font-semibold">
+                                                        Thao tác
+                                                    </th>
                                                 </tr>
-                                            ) : residents.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                                                        Không tìm thấy cư dân nào
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                residents.map((resident) => (
-                                                    <tr key={resident.residentId} className="hover:bg-muted/50 transition-colors">
-                                                        <td className="px-4 py-4 text-base font-medium">
-                                                            <div>
-                                                                {resident.fullName}
-                                                            </div>
-                                                            {resident.dateOfBirth && (
-                                                                <div className="text-muted-foreground text-sm">
-                                                                    {formatUTCToLocal(resident.dateOfBirth, 'vi-VN')}
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-4 py-4 text-base text-muted-foreground">
-                                                            {resident.indentityCardNumber || 'N/A'}
-                                                        </td>
-                                                        <td className="px-4 py-4 text-base">
-                                                            <div className="font-medium">
-                                                                {resident.household_resident?.householdCode}
-                                                            </div>
-                                                            <div className="text-muted-foreground text-sm">
-                                                                {resident.household_resident?.ownerName}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-4 py-4 text-base text-muted-foreground">
-                                                            {resident.relationToOwner}
-                                                        </td>
-                                                        <td className="px-4 py-4 text-base text-muted-foreground">
-                                                            {resident.job}
-                                                        </td>
-                                                        <td className="px-4 py-4 text-base text-muted-foreground">
-                                                            {resident.phone_number}
-                                                        </td>
-                                                        <td className="px-4 py-4 text-base">
-                                                            <span className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${
-                                                                resident.isStaying
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                                {resident.isStaying ? 'Đang ở' : 'Đã chuyển đi'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4 py-4 text-right">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                                        <MoreVertical className="h-4 w-4" />
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end">
-                                                                    <DropdownMenuItem 
-                                                                        onClick={() => openEditDialog(resident)}
-                                                                        className="cursor-pointer"
-                                                                    >
-                                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                                        Sửa
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        onClick={() => openDeleteDialog(resident)}
-                                                                        className="cursor-pointer text-red-600 focus:text-red-600"
-                                                                    >
-                                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                                        Xóa
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
+                                            </thead>
+                                            <tbody className="divide-y divide-border">
+                                                {loading ? (
+                                                    <tr>
+                                                        <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                                                            Đang tải...
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                ) : residents.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                                                            Không tìm thấy cư dân nào
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    residents.map((resident) => (
+                                                        <tr key={resident.residentId} className="hover:bg-muted/50 transition-colors">
+                                                            <td className="px-4 py-4 text-base font-medium">
+                                                                <div>
+                                                                    {resident.fullName}
+                                                                </div>
+                                                                {resident.dateOfBirth && (
+                                                                    <div className="text-muted-foreground text-sm">
+                                                                        {new Date(resident.dateOfBirth).toLocaleDateString('vi-VN', {
+                                                                            day: '2-digit',
+                                                                            month: '2-digit',
+                                                                            year: 'numeric'
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base text-muted-foreground">
+                                                                {resident.indentityCardNumber || 'N/A'}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base">
+                                                                <div className="font-medium">
+                                                                    {resident.household_resident?.householdCode}
+                                                                </div>
+                                                                <div className="text-muted-foreground text-sm">
+                                                                    {resident.household_resident?.ownerName}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base text-muted-foreground">
+                                                                {resident.relationToOwner}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base text-muted-foreground">
+                                                                {resident.job}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base text-muted-foreground">
+                                                                {resident.phone_number}
+                                                            </td>
+                                                            <td className="px-4 py-4 text-base">
+                                                                <span className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${resident.isStaying
+                                                                        ? 'bg-green-100 text-green-800'
+                                                                        : 'bg-red-100 text-red-800'
+                                                                    }`}>
+                                                                    {resident.isStaying ? 'Đang ở' : 'Đã chuyển đi'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-4 text-right">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                                            <MoreVertical className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => openEditDialog(resident)}
+                                                                            className="cursor-pointer"
+                                                                        >
+                                                                            <Pencil className="mr-2 h-4 w-4" />
+                                                                            Sửa
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => openDeleteDialog(resident)}
+                                                                            className="cursor-pointer text-red-600 focus:text-red-600"
+                                                                        >
+                                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                                            Xóa
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
 
@@ -449,7 +452,7 @@ const ResidentManagementPage = () => {
                                             >
                                                 ««
                                             </Button>
-                                            
+
                                             {/* Previous Page */}
                                             <Button
                                                 variant="outline"
@@ -459,44 +462,44 @@ const ResidentManagementPage = () => {
                                             >
                                                 ‹ Trước
                                             </Button>
-                                            
+
                                             {/* Page Numbers with Ellipsis */}
                                             <div className="flex items-center gap-1">
                                                 {(() => {
                                                     const current = pagination.currentPage;
                                                     const total = pagination.totalPages;
                                                     const pages = [];
-                                                    
+
                                                     if (total <= 7) {
                                                         for (let i = 1; i <= total; i++) {
                                                             pages.push(i);
                                                         }
                                                     } else {
                                                         pages.push(1);
-                                                        
+
                                                         if (current > 3) {
                                                             pages.push('...');
                                                         }
-                                                        
+
                                                         const start = Math.max(2, current - 1);
                                                         const end = Math.min(total - 1, current + 1);
-                                                        
+
                                                         for (let i = start; i <= end; i++) {
                                                             if (!pages.includes(i)) {
                                                                 pages.push(i);
                                                             }
                                                         }
-                                                        
+
                                                         if (current < total - 2) {
                                                             pages.push('...');
                                                         }
-                                                        
+
                                                         if (!pages.includes(total)) {
                                                             pages.push(total);
                                                         }
                                                     }
-                                                    
-                                                    return pages.map((page, idx) => 
+
+                                                    return pages.map((page, idx) =>
                                                         typeof page === 'number' ? (
                                                             <Button
                                                                 key={page}
@@ -516,7 +519,7 @@ const ResidentManagementPage = () => {
                                                     );
                                                 })()}
                                             </div>
-                                            
+
                                             {/* Next Page */}
                                             <Button
                                                 variant="outline"
@@ -526,7 +529,7 @@ const ResidentManagementPage = () => {
                                             >
                                                 Sau ›
                                             </Button>
-                                            
+
                                             {/* Last Page */}
                                             <Button
                                                 variant="outline"
@@ -537,7 +540,7 @@ const ResidentManagementPage = () => {
                                             >
                                                 »»
                                             </Button>
-                                            
+
                                             {/* Go to Page Input */}
                                             <div className="flex items-center gap-2 ml-2">
                                                 <span className="text-base text-muted-foreground">Đến trang:</span>
@@ -682,9 +685,9 @@ const ResidentManagementPage = () => {
                                                 </div>
                                             </div>
                                             <DialogFooter>
-                                                <Button 
-                                                    type="button" 
-                                                    variant="outline" 
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
                                                     onClick={() => setIsCreateDialogOpen(false)}
                                                     disabled={isSubmitting}
                                                 >
@@ -798,9 +801,9 @@ const ResidentManagementPage = () => {
                                                 </div>
                                             </div>
                                             <DialogFooter>
-                                                <Button 
-                                                    type="button" 
-                                                    variant="outline" 
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
                                                     onClick={() => setIsEditDialogOpen(false)}
                                                     disabled={isSubmitting}
                                                 >
