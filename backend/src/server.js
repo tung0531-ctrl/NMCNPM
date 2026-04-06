@@ -29,9 +29,9 @@ app.set('trust proxy', true);
 const frontendOrigin = process.env.FRONTEND_ORIGIN|| 'http://localhost:5173';
 app.use(
     cors({
-        origin: [frontendOrigin, 'http://localhost:5173', 'http://localhost:5174'],
+        origin: [frontendOrigin, 'http://localhost:5173', 'http://localhost:5174', 'https://bluemoon-ten-silk.vercel.app'],
         credentials: true
-    })
+    })s
 );
 app.use(express.json());
 app.use(cookieParser());
